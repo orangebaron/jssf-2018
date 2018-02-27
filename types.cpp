@@ -1,4 +1,5 @@
 #include "types.hpp"
+#include <iostream>
 
 using namespace blockchain;
 
@@ -13,7 +14,10 @@ using namespace blockchain;
   return true;
 
 bool Pubkey::operator==(Pubkey p) const {
-  return true;
+  return x==p.x;
+}
+bool Pubkey::operator<(Pubkey p) const {
+  return x<p.x;
 }
 
 Sig::Sig(Pubkey pubkey): pubkey(pubkey) {}
@@ -28,7 +32,9 @@ bool Sig::getValid(Hashable& h) {
   validCheckEnd();
 }
 
-TxnOtp::TxnOtp(Pubkey person,TxnAmt amt): person(person), amt(amt) {}
+TxnOtp::TxnOtp(Pubkey person,TxnAmt amt,bool isOrigin): person(person), amt(amt) {
+  if (isOrigin) validChecked = True;
+}
 Hash TxnOtp::getHash() const {
   return Hash();
 }
@@ -54,21 +60,21 @@ bool Txn::getValid() {
   validCheckBegin();
   std::map<Pubkey,bool> sendersThatDidntSign;
   TxnAmt sent = 0, recieved = 0;
-  for (auto i=inps.begin();i<inps.end();i++) {
-    if (!(*i)->getValid()) return false;
-    if (*i < &*otps.end() && *i >= &*otps.begin()) return false; // check if it's referring to one of the outputs of this txn
-    sent += (*i)->getAmt();
-    sendersThatDidntSign[(*i)->getPerson()] = true;
-  }
-  for (auto i=otps.begin();i<otps.end();i++) {
+  for (auto i: inps) {
     if (!i->getValid()) return false;
-    recieved = i->getAmt();
+    if (i < &*otps.end() && i >= &*otps.begin()) return false; // check if it's referring to one of the outputs of this txn
+    sent += i->getAmt();
+    sendersThatDidntSign[i->getPerson()] = true;
+  }
+  for (auto i: otps) {
+    if (!i.getValid()) return false;
+    recieved = i.getAmt();
   }
   if (sent!=recieved) return false;
-  for (auto i=sigs.begin();i<sigs.end();i++) {
-    if (!i->getValid(*this)) return false;
+  for (auto i: sigs) {
+    if (!i.getValid(*this)) return false;
     try {
-      sendersThatDidntSign.erase(i->getPerson());
+      sendersThatDidntSign.erase(i.getPerson());
     } catch (...) {
       return false;
     }

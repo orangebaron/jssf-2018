@@ -6,7 +6,14 @@ using std::vector;
 
 namespace blockchain {
   enum ValidChecked { Unchecked,False,True };
-  class Pubkey { public: bool operator==(Pubkey) const; };
+  class Pubkey {
+    int x = 5; // just for now
+  public:
+    Pubkey() {} // just for now
+    Pubkey(int x): x(x) {} // just for now
+    bool operator==(Pubkey) const;
+    bool operator<(Pubkey) const;
+  };
   class Hash {};
   class Validable {
   protected:
@@ -17,7 +24,7 @@ namespace blockchain {
   class Hashable {
   public:
     virtual Hash getHash() const = 0;
-    virtual Hash getHashBeforeSig() const; // only write this func if thing is signed
+    virtual Hash getHashBeforeSig() const { return Hash(); } // only write this func if thing is signed
   };
   class Sig: public Hashable {
     Pubkey pubkey;
@@ -34,7 +41,7 @@ namespace blockchain {
     Pubkey person;
     TxnAmt amt;
   public:
-    TxnOtp(Pubkey,TxnAmt);
+    TxnOtp(Pubkey,TxnAmt,bool isOrigin=false);
     TxnAmt getAmt() const;
     Pubkey getPerson() const;
     virtual Hash getHash() const;
