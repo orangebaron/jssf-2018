@@ -7,7 +7,7 @@ using std::vector;
 namespace blockchain {
   enum ValidChecked { Unchecked,False,True };
   class Pubkey {
-    int x = 5; // just for now
+    int x = 0; // just for now
   public:
     Pubkey() {} // just for now
     Pubkey(int x): x(x) {} // just for now
