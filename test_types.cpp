@@ -18,6 +18,7 @@ int main(int argc, char* argv[]) {
   assert(! Txn({&origin},{},{Sig(p1)}).getValid(),"Txn with no output");
   assert(! Txn({&origin},{TxnOtp(p1,10)},{}).getValid(),"Txn with no signature");
   assert(! Txn({&origin},{TxnOtp(p1,10)},{Sig(p2)}).getValid(),"Txn with wrong signature");
+  assert(! Txn({&origin},{TxnOtp(p1,10)},{Sig(p1),Sig(p1)}).getValid(),"Txn with too many signatures");
   assert(! Txn({&origin},{TxnOtp(p1,5)},{Sig(p1)}).getValid(),"Valid with less otp than inp");
   assert(  Txn({&origin},{TxnOtp(p1,10)},{Sig(p1)}).getValid(),"Valid 1-to-1 transaction");
   Txn t1({&origin},{TxnOtp(p1,5),TxnOtp(p2,5)},{Sig(p1)});

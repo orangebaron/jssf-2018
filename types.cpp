@@ -68,12 +68,13 @@ bool Txn::getValid() {
   }
   for (auto i: otps) {
     if (!i.getValid()) return false;
-    recieved = i.getAmt();
+    recieved += i.getAmt();
   }
   if (sent!=recieved) return false;
   for (auto i: sigs) {
     if (!i.getValid(*this)) return false;
     try {
+      sendersThatDidntSign.at(i.getPerson());
       sendersThatDidntSign.erase(i.getPerson());
     } catch (...) {
       return false;
