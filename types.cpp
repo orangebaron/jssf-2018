@@ -6,11 +6,10 @@ using namespace blockchain;
 #include <map>
 
 #define validCheckBegin(); \
-  if (validChecked==False) return false; \
-  if (validChecked==True) return true; \
-  validChecked = False;
+  try { if (v.at(*this)) return false; else return true; } catch (...) {} \
+  v[*this] = false;
 #define validCheckEnd(); \
-  validChecked = True; \
+  v[*this] = true; \
   return true;
 
 bool Pubkey::operator==(Pubkey p) const {
@@ -27,18 +26,17 @@ Pubkey Sig::getPerson() const {
 Hash Sig::getHash() const {
   return Hash();
 }
-bool Sig::getValid(Hashable& h) {
-  validCheckBegin();
-  validCheckEnd();
+bool Sig::getValid(const Hashable& h) const {
+  return true;
 }
 
-TxnOtp::TxnOtp(Pubkey person,TxnAmt amt,bool isOrigin): person(person), amt(amt) {
-  if (isOrigin) validChecked = True;
+TxnOtp::TxnOtp(Pubkey person,TxnAmt amt,ValidsChecked* v,bool isOrigin): person(person), amt(amt) {
+  if (isOrigin) *v[*this] = true;
 }
 Hash TxnOtp::getHash() const {
   return Hash();
 }
-bool TxnOtp::getValid() {
+bool TxnOtp::getValid(const ExtraChainData&, ValidsChecked& v) const {
   validCheckBegin();
   validCheckEnd();
 }
@@ -56,18 +54,22 @@ Hash Txn::getHashBeforeSig() const {
 Hash Txn::getHash() const {
   return getHashBeforeSig();
 }
-bool Txn::getValid() {
+bool Txn::getValid(const ExtraChainData& e, ValidsChecked& v) const {
   validCheckBegin();
   std::map<Pubkey,bool> sendersThatDidntSign;
+  std::map<TxnOtp*,bool> inputsUsed;
   TxnAmt sent = 0, recieved = 0;
   for (auto i: inps) {
-    if (!i->getValid()) return false;
+    if (!i->getValid(e,v)) return false;
     if (i < &*otps.end() && i >= &*otps.begin()) return false; // check if it's referring to one of the outputs of this txn
+    if (inputsUsed[i]) return false;
+    try { if (e.spentOutputs.at(i)) return false; } catch(...) {}
+    inputsUsed[i] = true;
     sent += i->getAmt();
     sendersThatDidntSign[i->getPerson()] = true;
   }
   for (auto i: otps) {
-    if (!i.getValid()) return false;
+    if (!i.getValid(e,v)) return false;
     recieved += i.getAmt();
   }
   if (sent!=recieved) return false;
@@ -83,15 +85,27 @@ bool Txn::getValid() {
   if (sendersThatDidntSign.size() > 0) return false;
   validCheckEnd();
 }
+void Txn::apply(ExtraChainData& e) const {
+  for (auto i: inps) e.spentOutputs[i] = this;
+}
+void Txn::unapply(ExtraChainData& e) const {
+  for (auto i: inps) if (e.spentOutputs[i] == this) e.spentOutputs[i] = NULL;
+}
 
 Block::Block(vector<Txn> txns,vector<Block*> approved): txns(txns),approved(approved) {}
 Hash Block::getHash() const {
   return getHashBeforeSig();
 }
-bool Block::getValid() {
+bool Block::getValid(const ExtraChainData& e, ValidsChecked& v) const {
   validCheckBegin();
-  for (auto i=txns.begin();i<txns.end();i++) if (!i->getValid()) return false;
-  for (auto i=approved.begin();i<approved.end();i++) if (!(*i)->getValid()) return false;
+  for (auto i=txns.begin();i<txns.end();i++) if (!i->getValid(e,v)) return false;
+  for (auto i=approved.begin();i<approved.end();i++) if (!(*i)->getValid(e,v)) return false;
   // check nonce
   validCheckEnd();
+}
+void Block::apply(ExtraChainData& e) const {
+  for (auto i: txns) i.apply(e);
+}
+void Block::unapply(ExtraChainData& e) const {
+  for (auto i: txns) i.unapply(e);
 }
