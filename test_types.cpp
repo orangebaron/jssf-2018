@@ -7,7 +7,7 @@ using namespace blockchain;
 #define testNum 0
 #define assert(a,b) \
 if (argc==1 || std::stoi(argv[1])==__LINE__) \
-if (!a) { std::cout<<"Test failed: "<<b<<", line "<<__LINE__<<std::endl; return 0; }
+if (!a) { std::cout<<"Test failed: "<<b<<", line "<<__LINE__<<std::endl; /*return 0;*/ }
 
 // call with no arguments to run all tests or one argument (line no.) to do 1 test
 int main(int argc, char* argv[]) {
@@ -16,7 +16,9 @@ int main(int argc, char* argv[]) {
   Pubkey p1, p2(1);
   TxnOtp origin = TxnOtp(p1,10,&v);
   assert(origin.getValid(e,v),"Origin");
-  assert(! Txn({&origin},{},{}).getValid(e,v),"Txn with no output or signature");
+  Txn t0({&origin},{},{});
+  assert(! t0.getValid(e,v),"Txn with no output or signature");
+  assert(! t0.getValid(e,v),"Re-checking validity (false)");
   assert(! Txn({&origin},{},{Sig(p1)}).getValid(e,v),"Txn with no output");
   assert(! Txn({&origin},{TxnOtp(p1,10)},{}).getValid(e,v),"Txn with no signature");
   assert(! Txn({&origin},{TxnOtp(p1,10)},{Sig(p2)}).getValid(e,v),"Txn with wrong signature");
@@ -26,10 +28,11 @@ int main(int argc, char* argv[]) {
   assert(  Txn({&origin},{TxnOtp(p1,10)},{Sig(p1)}).getValid(e,v),"Valid 1-to-1 transaction");
   Txn t1({&origin},{TxnOtp(p1,5),TxnOtp(p2,5)},{Sig(p1)});
   assert(t1.getValid(e,v),"Valid 1-to-2 transaction");
+  assert(t1.getValid(e,v),"Re-checking validity(true)");
   // TODO: test multiple i/o txns
   Block b1 = Block({t1},{});
   assert(b1.getValid(e,v),"Empty block for now (TODO: do things with this)");
   b1.apply(e);
-  std::cout << "Tests succeeded" << std::endl;
+  std::cout << "Tests done" << std::endl;
   return 0;
 }

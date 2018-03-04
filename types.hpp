@@ -18,7 +18,7 @@ namespace blockchain {
   class Hash {};
   class ExtraChainData;
   class Validable;
-  typedef map<const Validable&,bool> ValidsChecked;
+  typedef map<const Validable*,bool> ValidsChecked;
   class Validable {
   public:
     virtual bool getValid(const ExtraChainData&,ValidsChecked&) const = 0;

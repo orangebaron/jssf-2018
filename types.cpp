@@ -6,10 +6,10 @@ using namespace blockchain;
 #include <map>
 
 #define validCheckBegin(); \
-  try { if (v.at(*this)) return false; else return true; } catch (...) {} \
-  v[*this] = false;
+  try { if (v.at(this)) return true; else return false; } catch (...) {} \
+  v[this] = false;
 #define validCheckEnd(); \
-  v[*this] = true; \
+  v[this] = true; \
   return true;
 
 bool Pubkey::operator==(Pubkey p) const {
@@ -31,7 +31,7 @@ bool Sig::getValid(const Hashable& h) const {
 }
 
 TxnOtp::TxnOtp(Pubkey person,TxnAmt amt,ValidsChecked* v): person(person), amt(amt) {
-  if (v != NULL) (*v)[*this] = true;
+  if (v != NULL) (*v)[this] = true;
 }
 Hash TxnOtp::getHash() const {
   return Hash();
