@@ -55,11 +55,11 @@ namespace blockchain {
     virtual bool getValid(const ExtraChainData&,ValidsChecked&) const;
   };
   class Txn: public Hashable, public Validable, public Applyable {
-    const vector<const TxnOtp*> inps;
-    const vector<TxnOtp> otps;
-    const vector<Sig> sigs;
+    vector<const TxnOtp*> inps;
+    vector<TxnOtp> otps;
+    vector<Sig> sigs;
   public:
-    Txn(const vector<const TxnOtp*>,const vector<TxnOtp>,const vector<Sig>);
+    Txn(vector<const TxnOtp*>,vector<TxnOtp>,vector<Sig>);
     virtual Hash getHash() const;
     virtual Hash getHashBeforeSig() const;
     virtual bool getValid(const ExtraChainData&,ValidsChecked&) const;
@@ -77,6 +77,7 @@ namespace blockchain {
     virtual bool getValid(const ExtraChainData&,ValidsChecked&) const;
     virtual void apply(ExtraChainData&) const;
     virtual void unapply(ExtraChainData&) const;
+    const vector<Txn>& getTxns() const;
   };
   class ExtraChainData {
   public:

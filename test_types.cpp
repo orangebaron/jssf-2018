@@ -29,12 +29,15 @@ int main(int argc, char* argv[]) {
   Txn t1({&origin},{TxnOtp(p1,5),TxnOtp(p2,5)},{Sig(p1)});
   assert(t1.getValid(e,v),"Valid 1-to-2 transaction");
   assert(t1.getValid(e,v),"Re-checking validity(true)");
-  // TODO: test multiple i/o txns
   Block b1 = Block({t1},{});
   assert(b1.getValid(e,v),"Empty block for now (TODO: do things with this)");
   b1.apply(e);
   assert(! Txn({&origin},{TxnOtp(p1,5),TxnOtp(p2,5)},{Sig(p1)}).getValid(e,v),"Txn that uses spent output");
   assert(! Txn({(const TxnOtp*)&origin,&(t1.getOtps()[0])},{TxnOtp(p1,5),TxnOtp(p2,5)},{Sig(p1)}).getValid(e,v),"Txn that uses partly spent output");
+  assert(! Txn({&b1.getTxns()[0].getOtps()[0],&b1.getTxns()[0].getOtps()[1]},{TxnOtp(p1,5),TxnOtp(p2,5)},{Sig(p2)}).getValid(e,v),"2 input, 1 sig");
+  assert(! Txn({&b1.getTxns()[0].getOtps()[0],&b1.getTxns()[0].getOtps()[1]},{TxnOtp(p1,5)},{Sig(p1),Sig(p2)}).getValid(e,v),"Multi input, smaller coinamt output");
+  Txn t2({&b1.getTxns()[0].getOtps()[0],&b1.getTxns()[0].getOtps()[1]},{TxnOtp(p1,5),TxnOtp(p2,5)},{Sig(p1),Sig(p2)});
+  assert(  t2.getValid(e,v),"2-input 2-output txn")
   std::cout << "Tests done" << std::endl;
   return 0;
 }

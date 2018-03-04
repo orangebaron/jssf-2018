@@ -47,7 +47,7 @@ Pubkey TxnOtp::getPerson() const {
   return person;
 }
 
-Txn::Txn(const vector<const TxnOtp*> inps,const vector<TxnOtp> otps,const vector<Sig> sigs): inps(inps),otps(otps),sigs(sigs) {}
+Txn::Txn(vector<const TxnOtp*> inps,vector<TxnOtp> otps,vector<Sig> sigs): inps(inps),otps(otps),sigs(sigs) {}
 Hash Txn::getHashBeforeSig() const {
   return Hash();
 }
@@ -111,4 +111,7 @@ void Block::apply(ExtraChainData& e) const {
 }
 void Block::unapply(ExtraChainData& e) const {
   for (auto i: txns) i.unapply(e);
+}
+const vector<Txn>& Block::getTxns() const {
+  return txns;
 }
