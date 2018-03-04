@@ -44,6 +44,7 @@ namespace blockchain {
   };
   class Txn;
   typedef unsigned int TxnAmt;
+  typedef unsigned int GasAmt;
   class TxnOtp: public Hashable, public Validable {
     Pubkey person;
     TxnAmt amt;

@@ -1,5 +1,5 @@
-#include "types.hpp"
 #include "types.cpp"
+#include "code.cpp"
 #include <iostream>
 #include <string>
 using namespace blockchain;
@@ -7,7 +7,7 @@ using namespace blockchain;
 #define testNum 0
 #define assert(a,b) \
 if (argc==1 || std::stoi(argv[1])==__LINE__) \
-if (!a) { std::cout<<"Test failed: "<<b<<", line "<<__LINE__<<std::endl; /*return 0;*/ }
+if (!(a)) { std::cout<<"Test failed: "<<b<<", line "<<__LINE__<<std::endl; /*return 0;*/ }
 
 // call with no arguments to run all tests or one argument (line no.) to do 1 test
 int main(int argc, char* argv[]) {
@@ -37,7 +37,13 @@ int main(int argc, char* argv[]) {
   assert(! Txn({&b1.getTxns()[0].getOtps()[0],&b1.getTxns()[0].getOtps()[1]},{TxnOtp(p1,5),TxnOtp(p2,5)},{Sig(p2)}).getValid(e,v),"2 input, 1 sig");
   assert(! Txn({&b1.getTxns()[0].getOtps()[0],&b1.getTxns()[0].getOtps()[1]},{TxnOtp(p1,5)},{Sig(p1),Sig(p2)}).getValid(e,v),"Multi input, smaller coinamt output");
   Txn t2({&b1.getTxns()[0].getOtps()[0],&b1.getTxns()[0].getOtps()[1]},{TxnOtp(p1,5),TxnOtp(p2,5)},{Sig(p1),Sig(p2)});
-  assert(  t2.getValid(e,v),"2-input 2-output txn")
+  assert(  t2.getValid(e,v),"2-input 2-output txn");
+
+  //basic code, will be changed later
+  CodeMemory c1({0,4,1,1,1,5});
+  RunOtp x = c1.run();
+  assert(x.moneySpent[0].getAmt() == 6 && x.gasUsed == 3,"Add and spend code");
+
   std::cout << "Tests done" << std::endl;
   return 0;
 }

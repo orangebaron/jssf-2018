@@ -1,3 +1,6 @@
+#ifndef TYPES_CPP
+#define TYPES_CPP
+
 #include "types.hpp"
 #include <iostream>
 
@@ -115,3 +118,5 @@ void Block::unapply(ExtraChainData& e) const {
 const vector<Txn>& Block::getTxns() const {
   return txns;
 }
+
+#endif
