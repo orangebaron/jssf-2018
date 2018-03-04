@@ -40,9 +40,15 @@ int main(int argc, char* argv[]) {
   assert(  t2.getValid(e,v),"2-input 2-output txn");
 
   //basic code, will be changed later
-  CodeMemory c1({0,4,1,1,1,5});
-  RunOtp x = c1.run();
+  CodeMemory c0({0,5,1,2,5,5});
+  auto x = c0.run(10);
   assert(x.moneySpent[0].getAmt() == 6 && x.gasUsed == 3,"Add and spend code");
+  c0 = CodeMemory({0,5,1,2,5,5});
+  x = c0.run(2);
+  assert(x.moneySpent.size() == 0 && x.gasUsed == 1,"Add and spend code, not enough gas");
+  c0 = CodeMemory({1,5,1,2,5,5});
+  x = c0.run(3);
+  assert(x.moneySpent[0].getAmt() == 4 && x.gasUsed == 3,"Sub and spend code, just enough gas");
 
   std::cout << "Tests done" << std::endl;
   return 0;

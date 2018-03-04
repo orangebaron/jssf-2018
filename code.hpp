@@ -10,10 +10,10 @@ namespace blockchain {
   };
   class CodeMemory {
     size_t location = 0;
-    vector<int> memory;
+    vector<unsigned int> memory;
   public:
-    CodeMemory(vector<int> memory): memory(memory) {}
-    RunOtp run();
+    CodeMemory(vector<unsigned int> memory): memory(memory) {}
+    RunOtp run(GasAmt gasLimit);
   };
 }
 
