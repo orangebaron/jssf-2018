@@ -33,6 +33,8 @@ int main(int argc, char* argv[]) {
   Block b1 = Block({t1},{});
   assert(b1.getValid(e,v),"Empty block for now (TODO: do things with this)");
   b1.apply(e);
+  assert(! Txn({&origin},{TxnOtp(p1,5),TxnOtp(p2,5)},{Sig(p1)}).getValid(e,v),"Txn that uses spent output");
+  assert(! Txn({(const TxnOtp*)&origin,&(t1.getOtps()[0])},{TxnOtp(p1,5),TxnOtp(p2,5)},{Sig(p1)}).getValid(e,v),"Txn that uses partly spent output");
   std::cout << "Tests done" << std::endl;
   return 0;
 }

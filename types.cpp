@@ -47,7 +47,7 @@ Pubkey TxnOtp::getPerson() const {
   return person;
 }
 
-Txn::Txn(vector<TxnOtp*> inps,vector<TxnOtp> otps,vector<Sig> sigs): inps(inps),otps(otps),sigs(sigs) {}
+Txn::Txn(const vector<TxnOtp*> inps,const vector<TxnOtp> otps,const vector<Sig> sigs): inps(inps),otps(otps),sigs(sigs) {}
 Hash Txn::getHashBeforeSig() const {
   return Hash();
 }
@@ -57,7 +57,7 @@ Hash Txn::getHash() const {
 bool Txn::getValid(const ExtraChainData& e, ValidsChecked& v) const {
   validCheckBegin();
   std::map<Pubkey,bool> sendersThatDidntSign;
-  std::map<TxnOtp*,bool> inputsUsed;
+  std::map<const TxnOtp*,bool> inputsUsed;
   TxnAmt sent = 0, recieved = 0;
   for (auto i: inps) {
     if (!i->getValid(e,v)) return false;
@@ -90,6 +90,9 @@ void Txn::apply(ExtraChainData& e) const {
 }
 void Txn::unapply(ExtraChainData& e) const {
   for (auto i: inps) if (e.spentOutputs[i] == this) e.spentOutputs[i] = NULL;
+}
+const vector<TxnOtp>& Txn::getOtps() const {
+  return otps;
 }
 
 Block::Block(vector<Txn> txns,vector<Block*> approved): txns(txns),approved(approved) {}
