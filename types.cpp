@@ -30,8 +30,8 @@ bool Sig::getValid(const Hashable& h) const {
   return true;
 }
 
-TxnOtp::TxnOtp(Pubkey person,TxnAmt amt,ValidsChecked* v,bool isOrigin): person(person), amt(amt) {
-  if (isOrigin) *v[*this] = true;
+TxnOtp::TxnOtp(Pubkey person,TxnAmt amt,ValidsChecked* v): person(person), amt(amt) {
+  if (v != NULL) (*v)[*this] = true;
 }
 Hash TxnOtp::getHash() const {
   return Hash();

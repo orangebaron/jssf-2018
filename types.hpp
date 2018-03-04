@@ -48,7 +48,7 @@ namespace blockchain {
     Pubkey person;
     TxnAmt amt;
   public:
-    TxnOtp(Pubkey,TxnAmt,ValidsChecked*=NULL,bool isOrigin=false);
+    TxnOtp(Pubkey,TxnAmt,ValidsChecked* = NULL /*only give a value if it's origin*/);
     TxnAmt getAmt() const;
     Pubkey getPerson() const;
     virtual Hash getHash() const;

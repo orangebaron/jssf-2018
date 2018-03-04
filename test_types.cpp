@@ -14,7 +14,7 @@ int main(int argc, char* argv[]) {
   ExtraChainData e;
   ValidsChecked v;
   Pubkey p1, p2(1);
-  TxnOtp origin = TxnOtp(p1,10,v,true);
+  TxnOtp origin = TxnOtp(p1,10,&v);
   assert(origin.getValid(e,v),"Origin");
   assert(! Txn({&origin},{},{}).getValid(e,v),"Txn with no output or signature");
   assert(! Txn({&origin},{},{Sig(p1)}).getValid(e,v),"Txn with no output");
@@ -28,7 +28,7 @@ int main(int argc, char* argv[]) {
   assert(t1.getValid(e,v),"Valid 1-to-2 transaction");
   // TODO: test multiple i/o txns
   Block b1 = Block({t1},{});
-  assert(b1.getValid(e),"Empty block for now (TODO: do things with this)");
+  assert(b1.getValid(e,v),"Empty block for now (TODO: do things with this)");
   b1.apply(e);
   std::cout << "Tests succeeded" << std::endl;
   return 0;
