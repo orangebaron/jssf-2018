@@ -47,7 +47,7 @@ Pubkey TxnOtp::getPerson() const {
   return person;
 }
 
-Txn::Txn(const vector<TxnOtp*> inps,const vector<TxnOtp> otps,const vector<Sig> sigs): inps(inps),otps(otps),sigs(sigs) {}
+Txn::Txn(const vector<const TxnOtp*> inps,const vector<TxnOtp> otps,const vector<Sig> sigs): inps(inps),otps(otps),sigs(sigs) {}
 Hash Txn::getHashBeforeSig() const {
   return Hash();
 }

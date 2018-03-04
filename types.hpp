@@ -59,7 +59,7 @@ namespace blockchain {
     const vector<TxnOtp> otps;
     const vector<Sig> sigs;
   public:
-    Txn(const vector<TxnOtp*>,const vector<TxnOtp>,const vector<Sig>);
+    Txn(const vector<const TxnOtp*>,const vector<TxnOtp>,const vector<Sig>);
     virtual Hash getHash() const;
     virtual Hash getHashBeforeSig() const;
     virtual bool getValid(const ExtraChainData&,ValidsChecked&) const;
