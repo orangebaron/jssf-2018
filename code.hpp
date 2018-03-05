@@ -15,6 +15,9 @@ namespace blockchain {
     CodeMemory(vector<unsigned int> memory): memory(memory) {}
     RunOtp run(GasAmt gasLimit);
   };
+  enum class Opcodes : unsigned int {
+    QUIT,ADD,SUB,MULT,DIV,SHIFTR,SHIFTL,INV,SPEND
+  };
 }
 
 #endif
