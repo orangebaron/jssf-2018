@@ -16,7 +16,11 @@ namespace blockchain {
     RunOtp run(GasAmt gasLimit);
   };
   enum class Opcodes : unsigned int {
-    QUIT,ADD,SUB,MULT,DIV,SHIFTR,SHIFTL,INV,SPEND
+    QUIT,
+    ADD,SUB,MULT,DIV,SHIFTR,SHIFTL,INV,
+    AND,OR,XOR,NAND,NOR,XNOR,
+    JMP,JE,JNE,JL,JG,JLE,JGE,
+    SPEND
   };
 }
 
