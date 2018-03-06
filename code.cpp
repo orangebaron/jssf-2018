@@ -18,11 +18,14 @@ break;
 #define mathcmd(cmd,cost,x) command(cmd,cost,2,ptrat(1) x##= memat(2))
 #define boolcmd(cmd,cost,x) command(cmd,cost,2,ptrat(1) = ptrat(1) x ptrat(2))
 #define invboolcmd(cmd,cost,x) command(cmd,cost,2,ptrat(1) = !(ptrat(1) x ptrat(2)))
-#define cndjmp(cmd,cost,x) command(cmd,cost,-1,if((int)ptrat(1) x 0) codeLoc = memat(2))
+#define cndjmp(cmd,cost,x) command(cmd,cost,1,if((int)ptrat(1) x 0) {codeLoc = memat(2); justJumped = true;})
 
 RunOtp CodeMemory::run(GasAmt gasLimit) {
   RunOtp returnVal;
-  for (size_t codeLoc = 0, argsSize = 0; codeLoc < memory.size(); codeLoc += 1 + argsSize, argsSize = 0) {
+  for (size_t codeLoc = 0, argsSize = 0, justJumped = false;
+    codeLoc < memory.size();
+    codeLoc += justJumped ? 0 : (1 + argsSize), argsSize = 0, justJumped = false) {
+
     switch(memory[codeLoc]) {
       command(QUIT,0,0,codeLoc = memory.size());
       mathcmd(ADD,1,+);
@@ -38,7 +41,7 @@ RunOtp CodeMemory::run(GasAmt gasLimit) {
       invboolcmd(NAND,1,&&);
       invboolcmd(NOR,1,||);
       invboolcmd(XNOR,1,^);
-      command(JMP,1,-1,codeLoc = memat(1));
+      command(JMP,1,1,codeLoc = memat(1);justJumped = true);
       cndjmp(JE,1,==);
       cndjmp(JNE,1,!=);
       cndjmp(JL,1,<);
