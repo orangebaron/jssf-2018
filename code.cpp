@@ -18,7 +18,7 @@ break;
 #define mathcmd(cmd,cost,x) command(cmd,cost,2,ptrat(1) x##= memat(2))
 #define boolcmd(cmd,cost,x) command(cmd,cost,2,ptrat(1) = ptrat(1) x ptrat(2))
 #define invboolcmd(cmd,cost,x) command(cmd,cost,2,ptrat(1) = !(ptrat(1) x ptrat(2)))
-#define cndjmp(cmd,cost,x) command(cmd,cost,2,if((int)ptrat(1) x 0) codeLoc = memat(2))
+#define cndjmp(cmd,cost,x) command(cmd,cost,-1,if((int)ptrat(1) x 0) codeLoc = memat(2))
 
 RunOtp CodeMemory::run(GasAmt gasLimit) {
   RunOtp returnVal;
@@ -38,7 +38,7 @@ RunOtp CodeMemory::run(GasAmt gasLimit) {
       invboolcmd(NAND,1,&&);
       invboolcmd(NOR,1,||);
       invboolcmd(XNOR,1,^);
-      command(JMP,1,1,codeLoc = memat(1));
+      command(JMP,1,-1,codeLoc = memat(1));
       cndjmp(JE,1,==);
       cndjmp(JNE,1,!=);
       cndjmp(JL,1,<);
