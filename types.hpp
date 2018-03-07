@@ -55,6 +55,21 @@ namespace blockchain {
     virtual Hash getHash() const;
     virtual bool getValid(const ExtraChainData&,ValidsChecked&) const;
   };
+  class StorageChange: public Applyable {
+    Pubkey person;
+    unsigned int location;
+    unsigned int value;
+    unsigned int prevValue;
+  public:
+    StorageChange(Pubkey,unsigned int,unsigned int,unsigned int);
+    StorageChange(Pubkey,unsigned int,unsigned int,const ExtraChainData&);
+    Pubkey getPerson() const;
+    unsigned int getLocation() const;
+    unsigned int getValue() const;
+    unsigned int getPrevValue() const;
+    virtual void apply(ExtraChainData&) const;
+    virtual void unapply(ExtraChainData&) const;
+  };
   class Txn: public Hashable, public Validable, public Applyable {
     vector<const TxnOtp*> inps;
     vector<TxnOtp> otps;
@@ -83,6 +98,7 @@ namespace blockchain {
   class ExtraChainData {
   public:
     map<const TxnOtp*,const Txn*> spentOutputs;
+    map<Pubkey,map<unsigned int,unsigned int>> storage;
   };
 }
 

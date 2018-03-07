@@ -50,6 +50,23 @@ Pubkey TxnOtp::getPerson() const {
   return person;
 }
 
+StorageChange::StorageChange(Pubkey person,unsigned int location,unsigned int value,unsigned int prevValue):
+  person(person), location(location), value(value), prevValue(prevValue) {}
+StorageChange::StorageChange(Pubkey person,unsigned int location,unsigned int value,const ExtraChainData& e):
+  person(person), location(location), value(value) {
+  try { prevValue = e.storage.at(person).at(location); } catch (...) { prevValue = 0; }
+}
+Pubkey StorageChange::getPerson() const { return person; }
+unsigned int StorageChange::getLocation() const { return location; }
+unsigned int StorageChange::getValue() const { return value; }
+unsigned int StorageChange::getPrevValue() const { return prevValue; }
+void StorageChange::apply(ExtraChainData& e) const {
+  e.storage[person][location] = value;
+}
+void StorageChange::unapply(ExtraChainData& e) const {
+  e.storage[person][location] = prevValue;
+}
+
 Txn::Txn(vector<const TxnOtp*> inps,vector<TxnOtp> otps,vector<Sig> sigs): inps(inps),otps(otps),sigs(sigs) {}
 Hash Txn::getHashBeforeSig() const {
   return Hash();

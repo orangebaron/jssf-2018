@@ -6,6 +6,7 @@
 namespace blockchain {
   struct RunOtp {
     vector<TxnOtp> moneySpent;
+    vector<StorageChange> storageChanged;
     GasAmt gasUsed = 0;
   };
   class CodeMemory {
@@ -13,7 +14,7 @@ namespace blockchain {
     vector<unsigned int> memory;
   public:
     CodeMemory(vector<unsigned int> memory): memory(memory) {}
-    RunOtp run(GasAmt gasLimit);
+    RunOtp run(GasAmt gasLimit, const ExtraChainData&, Pubkey);
   };
   enum class Opcodes : unsigned int {
     QUIT,
@@ -21,6 +22,7 @@ namespace blockchain {
     AND,OR,XOR,NAND,NOR,XNOR,
     JMP,JE,JNE,JL,JG,JLE,JGE,
     SPEND,
+    MEMGET,MEMSET,
     DEBUGPRINT
   };
 }
