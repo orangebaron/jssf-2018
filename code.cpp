@@ -56,6 +56,8 @@ RunOtp CodeMemory::run(GasAmt gasLimit, const ExtraChainData& e, Pubkey p) {
         for (auto i: returnVal.storageChanged) if (i.getLocation() == ptrat(2)) ptrat(1) = i.getValue();
         });
       command(MEMSET,2,2,returnVal.storageChanged.push_back(StorageChange(p,ptrat(1),ptrat(2),e)));
+      command(MOV,1,2,ptrat(1)=ptrat(2));
+      command(SET,1,2,ptrat(1)=memat(2));
       command(DEBUGPRINT,0,0,std::cout<<"DEBUG PRINT "<<codeLoc<<std::endl);
     }
   }

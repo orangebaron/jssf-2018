@@ -42,6 +42,7 @@ void testCode(int& testNum,int testWanted) {
   singleSpendCodeTest(arr(cmd(MEMSET),10,11, cmd(MEMGET),11,10, cmd(SPEND),0,11, cmd(QUIT), 0,5),20,5,6,"Storage edit code");
   e.storage[Pubkey()][2] = 5;
   singleSpendCodeTest(arr(cmd(MEMGET),8,7, cmd(SPEND),0,8, cmd(QUIT), 2,0),20,5,4,"Storage get code");
+  singleSpendCodeTest(arr(cmd(SET),11,7, cmd(MOV),10,11, cmd(SPEND),0,10, cmd(QUIT), 0,0),20,7,4,"Move and set code");
 
   multipleSpendCodeTest(arr(cmd(SUB),10,1, cmd(SPEND),0,0, cmd(JNE),10,0, cmd(QUIT), 5),20,5,20,"JNE loop code");
   multipleSpendCodeTest(arr(cmd(SUB),10,1, cmd(SPEND),0,0, cmd(JE),10,0, cmd(QUIT), 1),20,2,8,"JE single loop code");

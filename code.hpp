@@ -23,6 +23,7 @@ namespace blockchain {
     JMP,JE,JNE,JL,JG,JLE,JGE,
     SPEND,
     MEMGET,MEMSET,
+    MOV,SET,
     DEBUGPRINT
   };
 }
