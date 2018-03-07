@@ -21,7 +21,8 @@ break;
 #define cndjmp(cmd,cost,x) command(cmd,cost,1,if((int)ptrat(1) x 0) {codeLoc = memat(2); justJumped = true;})
 
 CodeMemory::CodeMemory(vector<unsigned int> memory): memory(memory) {}
-RunOtp CodeMemory::run(const ExtraChainData& e, const ContractCall& caller) {
+RunOtp CodeMemory::run(const ExtraChainData& e, const ContractCall& caller) const {
+  vector<unsigned int> memory = this->memory;
   RunOtp returnVal;
   GasAmt gasLimit = caller.getMaxGas();
   Pubkey p = caller.getCalled();
@@ -97,7 +98,10 @@ bool ContractCall::getValid(const ExtraChainData& e,ValidsChecked& v) const {
   validCheckEnd();
 }
 Pubkey ContractCall::getCaller() const { return caller; }
+Pubkey ContractCall::getCalled() const { return called; }
+vector<unsigned int> ContractCall::getArgs() const { return args; }
 TxnAmt ContractCall::getAmount() const { return amt; }
+GasAmt ContractCall::getMaxGas() const { return maxGas; }
 RunOtp ContractCall::getOtp(const ExtraChainData& e) {
   return e.contractCodes.find(called)->second.run(e,*this);
 }

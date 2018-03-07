@@ -6,24 +6,25 @@
 #include <iostream>
 using namespace blockchain;
 
+#define creat(g) ContractCall(Pubkey(),Pubkey(),vector<unsigned int>(),0,g)
 #define cmd(x) (unsigned int)Opcodes::x
 #define arr(...) { __VA_ARGS__ }
 #define singleSpendCodeTest(arr,gasLim,spent,gas,name) \
-test(CodeMemory(arr).run(gasLim,e,Pubkey()).moneySpent.size() == 1 && \
-CodeMemory(arr).run(gasLim,e,Pubkey()).moneySpent[0].getAmt() == spent && \
-CodeMemory(arr).run(gasLim,e,Pubkey()).gasUsed == gas,name);
+test(CodeMemory(arr).run(e,creat(gasLim)).moneySpent.size() == 1 && \
+CodeMemory(arr).run(e,creat(gasLim)).moneySpent[0].getAmt() == spent && \
+CodeMemory(arr).run(e,creat(gasLim)).gasUsed == gas,name);
 #define multipleSpendCodeTest(arr,gasLim,amtSpent,gas,name) \
-test(CodeMemory(arr).run(gasLim,e,Pubkey()).moneySpent.size() == amtSpent && \
-CodeMemory(arr).run(gasLim,e,Pubkey()).gasUsed == gas,name);
+test(CodeMemory(arr).run(e,creat(gasLim)).moneySpent.size() == amtSpent && \
+CodeMemory(arr).run(e,creat(gasLim)).gasUsed == gas,name);
 
 void testCode(int& testNum,int testWanted) {
   ExtraChainData e;
-  #define x CodeMemory({cmd(SPEND),4,5, cmd(QUIT), 2,3}).run(2,e,Pubkey())
+  #define x CodeMemory({cmd(SPEND),4,5, cmd(QUIT), 2,3}).run(e,creat(2))
   test(x.moneySpent.size() == 1 && x.moneySpent[0].getAmt() == 3 &&
     x.moneySpent[0].getPerson() == 2 && x.gasUsed == 2,
     "Spend but pubkey is specified");
   #undef x
-  #define x CodeMemory({cmd(SHIFTR),13,8, cmd(SPEND),0,13, cmd(SHIFTL),13,16, cmd(SPEND),0,13, cmd(QUIT), 0x100}).run(10,e,Pubkey())
+  #define x CodeMemory({cmd(SHIFTR),13,8, cmd(SPEND),0,13, cmd(SHIFTL),13,16, cmd(SPEND),0,13, cmd(QUIT), 0x100}).run(e,creat(10))
   test(x.moneySpent.size() == 2 &&
   x.moneySpent[0].getAmt() == 1 &&
   x.moneySpent[1].getAmt() == 0x10000 &&

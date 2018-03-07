@@ -15,7 +15,7 @@ namespace blockchain {
     vector<unsigned int> memory;
   public:
     CodeMemory(vector<unsigned int> memory);
-    RunOtp run(const ExtraChainData& e, const ContractCall& caller);
+    RunOtp run(const ExtraChainData& e, const ContractCall& caller) const;
   };
   enum class Opcodes : unsigned int {
     QUIT,
