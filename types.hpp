@@ -72,12 +72,14 @@ namespace blockchain {
   };
   class Txn;
   class CodeMemory;
+  class RunOtp;
   class ExtraChainData {
   public:
     map<const TxnOtp*,const Txn*> spentOutputs;
     map<Pubkey,map<unsigned int,unsigned int>> storage;
     map<Pubkey,CodeMemory> contractCodes;
     map<Pubkey,TxnAmt> contractMoney;
+    map<const Txn*,vector<RunOtp>> contractOtps;
   };
 }
 

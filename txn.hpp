@@ -8,6 +8,7 @@ namespace blockchain {
     vector<const TxnOtp*> inps;
     vector<TxnOtp> otps;
     vector<ContractCreation> contractCreations;
+    vector<ContractCall> contractCalls;
     vector<Sig> sigs;
   public:
     Txn(vector<const TxnOtp*>,vector<TxnOtp>,vector<ContractCreation>,vector<Sig>);
