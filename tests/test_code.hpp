@@ -29,9 +29,7 @@ void testCode(int& testNum,int testWanted) {
   x.moneySpent[1].getAmt() == 0x10000 &&
   x.gasUsed == 6,"Bitshift-R, Bitshift-L code");
   #undef x
-  #define x CodeMemory({cmd(ADD),7,1, cmd(SPEND),0,7, cmd(QUIT), 5}).run(2,e,Pubkey())
-  test(x.moneySpent.size() == 0 && x.gasUsed == 1,"Add code, not enough gas");
-  #undef x
+  multipleSpendCodeTest(arr(cmd(ADD),7,1, cmd(SPEND),0,7, cmd(QUIT), 5),2,0,1,"Add code, not enough gas");
 
   singleSpendCodeTest(arr(cmd(ADD),7,1, cmd(SPEND),0,7, cmd(QUIT), 5),10,6,3,"Add code, more than enough gas");
   singleSpendCodeTest(arr(cmd(SUB),7,1, cmd(SPEND),0,7, cmd(QUIT), 5),3,4,3,"Sub code, just enough gas");
