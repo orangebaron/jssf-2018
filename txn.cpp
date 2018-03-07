@@ -9,7 +9,23 @@ using namespace blockchain;
   v[this] = true; \
   return true;
 
-Txn::Txn(vector<const TxnOtp*> inps,vector<TxnOtp> otps,vector<Sig> sigs): inps(inps),otps(otps),sigs(sigs) {}
+ContractCreation::ContractCreation(CodeMemory mem,Pubkey key): mem(mem), key(key) {}
+bool ContractCreation::getValid(const ExtraChainData& e,ValidsChecked& v) const {
+  validCheckBegin();
+  try { e.contractCodes.at(key); return false; } catch (...) {}
+  validCheckEnd();
+}
+void ContractCreation::apply(ExtraChainData& e) const {
+  e.contractCodes[key] = mem;
+  e.contractMoney[key] = 0;
+}
+void ContractCreation::unapply(ExtraChainData& e) const {
+  e.contractCodes.erase(key);
+  e.contractMoney.erase(key);
+}
+
+Txn::Txn(vector<const TxnOtp*> inps,vector<TxnOtp> otps,vector<ContractCreation> contractCreations,vector<Sig> sigs):
+  inps(inps),otps(otps),contractCreations(contractCreations),sigs(sigs) {}
 Hash Txn::getHashBeforeSig() const {
   return Hash();
 }

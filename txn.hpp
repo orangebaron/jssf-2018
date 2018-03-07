@@ -4,12 +4,24 @@
 #include "code.hpp"
 
 namespace blockchain {
+  class ContractCreation: public Hashable, public Validable, public Applyable {
+    CodeMemory mem;
+    Pubkey key;
+  public:
+    ContractCreation(CodeMemory,Pubkey);
+    virtual Hash getHash() const;
+    virtual Hash getHashBeforeSig() const;
+    virtual bool getValid(const ExtraChainData&,ValidsChecked&) const;
+    virtual void apply(ExtraChainData&) const;
+    virtual void unapply(ExtraChainData&) const;
+  };
   class Txn: public Hashable, public Validable, public Applyable {
     vector<const TxnOtp*> inps;
     vector<TxnOtp> otps;
+    vector<ContractCreation> contractCreations;
     vector<Sig> sigs;
   public:
-    Txn(vector<const TxnOtp*>,vector<TxnOtp>,vector<Sig>);
+    Txn(vector<const TxnOtp*>,vector<TxnOtp>,vector<ContractCreation>,vector<Sig>);
     virtual Hash getHash() const;
     virtual Hash getHashBeforeSig() const;
     virtual bool getValid(const ExtraChainData&,ValidsChecked&) const;

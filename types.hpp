@@ -71,10 +71,13 @@ namespace blockchain {
     virtual void unapply(ExtraChainData&) const;
   };
   class Txn;
+  class CodeMemory;
   class ExtraChainData {
   public:
     map<const TxnOtp*,const Txn*> spentOutputs;
     map<Pubkey,map<unsigned int,unsigned int>> storage;
+    map<Pubkey,CodeMemory> contractCodes;
+    map<Pubkey,TxnAmt> contractMoney;
   };
 }
 
