@@ -29,7 +29,6 @@ void testCode(int& testNum,int testWanted) {
   x.moneySpent[1].getAmt() == 0x10000 &&
   x.gasUsed == 6,"Bitshift-R, Bitshift-L code");
   #undef x
-  multipleSpendCodeTest(arr(cmd(ADD),7,1, cmd(SPEND),0,7, cmd(QUIT), 5),2,0,1,"Add code, not enough gas");
 
   singleSpendCodeTest(arr(cmd(ADD),7,1, cmd(SPEND),0,7, cmd(QUIT), 5),10,6,3,"Add code, more than enough gas");
   singleSpendCodeTest(arr(cmd(SUB),7,1, cmd(SPEND),0,7, cmd(QUIT), 5),3,4,3,"Sub code, just enough gas");
@@ -48,6 +47,7 @@ void testCode(int& testNum,int testWanted) {
   multipleSpendCodeTest(arr(cmd(ADD),10,1, cmd(SPEND),0,0, cmd(JL),10,0, cmd(QUIT), (unsigned int)-2),20,2,8,"JL loop code");
   multipleSpendCodeTest(arr(cmd(SUB),10,1, cmd(SPEND),0,0, cmd(JGE),10,0, cmd(QUIT), 6),24,6,24,"JGE loop code");
   multipleSpendCodeTest(arr(cmd(ADD),10,1, cmd(SPEND),0,0, cmd(JLE),10,0, cmd(QUIT), (unsigned int)-2),20,3,12,"JLE loop code");
+  multipleSpendCodeTest(arr(cmd(ADD),7,1, cmd(SPEND),0,7, cmd(QUIT), 5),2,0,1,"Add code, not enough gas");
 }
 
 #endif
