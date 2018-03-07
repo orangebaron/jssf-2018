@@ -50,12 +50,12 @@ RunOtp CodeMemory::run(GasAmt gasLimit, const ExtraChainData& e, Pubkey p) {
       cndjmp(JLE,1,<=);
       cndjmp(JGE,1,>=);
       command(SPEND,2,2,returnVal.moneySpent.push_back(TxnOtp(Pubkey(ptrat(1)),ptrat(2))));
-      command(MEMGET,2,2,
+      command(STRGET,2,2,
         {ptrat(1) = 0;
         try { ptrat(1)=e.storage.at(p).at(ptrat(2)); } catch(...) {}
         for (auto i: returnVal.storageChanged) if (i.getLocation() == ptrat(2)) ptrat(1) = i.getValue();
         });
-      command(MEMSET,2,2,returnVal.storageChanged.push_back(StorageChange(p,ptrat(1),ptrat(2),e)));
+      command(STRSET,2,2,returnVal.storageChanged.push_back(StorageChange(p,ptrat(1),ptrat(2),e)));
       command(MOV,1,2,ptrat(1)=ptrat(2));
       command(SET,1,2,ptrat(1)=memat(2));
       command(DEBUGPRINT,0,0,std::cout<<"DEBUG PRINT "<<codeLoc<<std::endl);

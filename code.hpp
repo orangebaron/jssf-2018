@@ -22,7 +22,7 @@ namespace blockchain {
     AND,OR,XOR,NAND,NOR,XNOR,
     JMP,JE,JNE,JL,JG,JLE,JGE,
     SPEND,
-    MEMGET,MEMSET,
+    STRGET,STRSET,
     MOV,SET,
     DEBUGPRINT
   };
