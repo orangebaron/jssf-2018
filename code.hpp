@@ -26,6 +26,16 @@ namespace blockchain {
     MOV,SET,
     DEBUGPRINT
   };
+  class ContractCreation: public Hashable, public Validable, public Applyable {
+    CodeMemory mem;
+    Pubkey key;
+  public:
+    ContractCreation(CodeMemory,Pubkey);
+    virtual Hash getHash() const;
+    virtual bool getValid(const ExtraChainData&,ValidsChecked&) const;
+    virtual void apply(ExtraChainData&) const;
+    virtual void unapply(ExtraChainData&) const;
+  };
 }
 
 #endif

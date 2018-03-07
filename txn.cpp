@@ -1,31 +1,7 @@
 #include "txn.hpp"
 
 using namespace blockchain;
-
-#define validCheckBegin(); \
-  try { if (v.at(this)) return true; else return false; } catch (...) {} \
-  v[this] = false;
-#define validCheckEnd(); \
-  v[this] = true; \
-  return true;
-
-ContractCreation::ContractCreation(CodeMemory mem,Pubkey key): mem(mem), key(key) {}
-Hash ContractCreation::getHash() const {
-  return Hash();
-}
-bool ContractCreation::getValid(const ExtraChainData& e,ValidsChecked& v) const {
-  validCheckBegin();
-  if (e.contractCodes.find(key)!=e.contractCodes.end()) return false;
-  validCheckEnd();
-}
-void ContractCreation::apply(ExtraChainData& e) const {
-  e.contractCodes.emplace(key,mem);
-  e.contractMoney[key] = 0;
-}
-void ContractCreation::unapply(ExtraChainData& e) const {
-  e.contractCodes.erase(key);
-  e.contractMoney.erase(key);
-}
+#include "valid_check.hpp"
 
 Txn::Txn(vector<const TxnOtp*> inps,vector<TxnOtp> otps,vector<ContractCreation> contractCreations,vector<Sig> sigs):
   inps(inps),otps(otps),contractCreations(contractCreations),sigs(sigs) {}
@@ -68,9 +44,11 @@ bool Txn::getValid(const ExtraChainData& e, ValidsChecked& v) const {
 }
 void Txn::apply(ExtraChainData& e) const {
   for (auto i: inps) e.spentOutputs[i] = this;
+  for (auto i: contractCreations) i.apply(e);
 }
 void Txn::unapply(ExtraChainData& e) const {
   for (auto i: inps) if (e.spentOutputs[i] == this) e.spentOutputs[i] = NULL;
+  for (auto i: contractCreations) i.unapply(e);
 }
 const vector<TxnOtp>& Txn::getOtps() const {
   return otps;

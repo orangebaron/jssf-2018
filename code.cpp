@@ -65,4 +65,23 @@ RunOtp CodeMemory::run(GasAmt gasLimit, const ExtraChainData& e, Pubkey p) {
   return returnVal;
 }
 
+#include "valid_check.hpp"
+ContractCreation::ContractCreation(CodeMemory mem,Pubkey key): mem(mem), key(key) {}
+Hash ContractCreation::getHash() const {
+  return Hash();
+}
+bool ContractCreation::getValid(const ExtraChainData& e,ValidsChecked& v) const {
+  validCheckBegin();
+  if (e.contractCodes.find(key)!=e.contractCodes.end()) return false;
+  validCheckEnd();
+}
+void ContractCreation::apply(ExtraChainData& e) const {
+  e.contractCodes.emplace(key,mem);
+  e.contractMoney[key] = 0;
+}
+void ContractCreation::unapply(ExtraChainData& e) const {
+  e.contractCodes.erase(key);
+  e.contractMoney.erase(key);
+}
+
 #endif

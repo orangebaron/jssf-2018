@@ -5,15 +5,8 @@
 #include <iostream>
 
 using namespace blockchain;
-
 #include <map>
-
-#define validCheckBegin(); \
-  try { if (v.at(this)) return true; else return false; } catch (...) {} \
-  v[this] = false;
-#define validCheckEnd(); \
-  v[this] = true; \
-  return true;
+#include "valid_check.hpp"
 
 bool Pubkey::operator==(Pubkey p) const {
   return x==p.x;
