@@ -9,12 +9,13 @@ namespace blockchain {
     vector<StorageChange> storageChanged;
     GasAmt gasUsed = 0;
   };
+  class ContractCall;
   class CodeMemory {
     size_t location = 0;
     vector<unsigned int> memory;
   public:
-    CodeMemory(vector<unsigned int> memory): memory(memory) {}
-    RunOtp run(GasAmt gasLimit, const ExtraChainData&, Pubkey);
+    CodeMemory(vector<unsigned int> memory);
+    RunOtp run(const ExtraChainData& e, const ContractCall& caller);
   };
   enum class Opcodes : unsigned int {
     QUIT,
@@ -36,6 +37,23 @@ namespace blockchain {
     virtual bool getValid(const ExtraChainData&,ValidsChecked&) const;
     virtual void apply(ExtraChainData&) const;
     virtual void unapply(ExtraChainData&) const;
+  };
+  class ContractCall: public Hashable, public Validable {
+    Pubkey caller;
+    Pubkey called;
+    vector<unsigned int> args;
+    TxnAmt amt;
+    GasAmt maxGas;
+  public:
+    ContractCall(Pubkey,Pubkey,vector<unsigned int>,TxnAmt,GasAmt);
+    virtual Hash getHash() const;
+    virtual bool getValid(const ExtraChainData&,ValidsChecked&) const;
+    Pubkey getCaller() const;
+    Pubkey getCalled() const;
+    vector<unsigned int> getArgs() const;
+    TxnAmt getAmount() const;
+    GasAmt getMaxGas() const;
+    RunOtp getOtp(const ExtraChainData&);
   };
 }
 

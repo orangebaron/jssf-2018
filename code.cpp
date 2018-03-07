@@ -20,8 +20,11 @@ break;
 #define invboolcmd(cmd,cost,x) command(cmd,cost,2,ptrat(1) = !(ptrat(1) x ptrat(2)))
 #define cndjmp(cmd,cost,x) command(cmd,cost,1,if((int)ptrat(1) x 0) {codeLoc = memat(2); justJumped = true;})
 
-RunOtp CodeMemory::run(GasAmt gasLimit, const ExtraChainData& e, Pubkey p) {
+CodeMemory::CodeMemory(vector<unsigned int> memory): memory(memory) {}
+RunOtp CodeMemory::run(const ExtraChainData& e, const ContractCall& caller) {
   RunOtp returnVal;
+  GasAmt gasLimit = caller.getMaxGas();
+  Pubkey p = caller.getCalled();
   try {
   for (size_t codeLoc = 0, argsSize = 0, justJumped = false;
     codeLoc < memory.size();
@@ -83,6 +86,20 @@ void ContractCreation::apply(ExtraChainData& e) const {
 void ContractCreation::unapply(ExtraChainData& e) const {
   e.contractCodes.erase(key);
   e.contractMoney.erase(key);
+}
+
+ContractCall::ContractCall(Pubkey caller,Pubkey called,vector<unsigned int> args,TxnAmt amt,GasAmt maxGas):
+  caller(caller),called(called),args(args),amt(amt),maxGas(maxGas) {}
+Hash ContractCall::getHash() const { return Hash(); }
+bool ContractCall::getValid(const ExtraChainData& e,ValidsChecked& v) const {
+  validCheckBegin();
+  if (e.contractCodes.find(called) == e.contractCodes.end()) return false;
+  validCheckEnd();
+}
+Pubkey ContractCall::getCaller() const { return caller; }
+TxnAmt ContractCall::getAmount() const { return amt; }
+RunOtp ContractCall::getOtp(const ExtraChainData& e) {
+  return e.contractCodes.find(called)->second.run(e,*this);
 }
 
 #endif
