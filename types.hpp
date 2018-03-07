@@ -70,31 +70,7 @@ namespace blockchain {
     virtual void apply(ExtraChainData&) const;
     virtual void unapply(ExtraChainData&) const;
   };
-  class Txn: public Hashable, public Validable, public Applyable {
-    vector<const TxnOtp*> inps;
-    vector<TxnOtp> otps;
-    vector<Sig> sigs;
-  public:
-    Txn(vector<const TxnOtp*>,vector<TxnOtp>,vector<Sig>);
-    virtual Hash getHash() const;
-    virtual Hash getHashBeforeSig() const;
-    virtual bool getValid(const ExtraChainData&,ValidsChecked&) const;
-    virtual void apply(ExtraChainData&) const;
-    virtual void unapply(ExtraChainData&) const;
-    const vector<TxnOtp>& getOtps() const;
-  };
-  class Block: public Hashable, public Validable, public Applyable {
-    vector<Txn> txns;
-    vector<Block*> approved;
-    int nonce;
-  public:
-    Block(vector<Txn>,vector<Block*>);
-    virtual Hash getHash() const;
-    virtual bool getValid(const ExtraChainData&,ValidsChecked&) const;
-    virtual void apply(ExtraChainData&) const;
-    virtual void unapply(ExtraChainData&) const;
-    const vector<Txn>& getTxns() const;
-  };
+  class Txn;
   class ExtraChainData {
   public:
     map<const TxnOtp*,const Txn*> spentOutputs;

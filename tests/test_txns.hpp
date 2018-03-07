@@ -3,6 +3,7 @@
 
 #include "unit_tests.hpp"
 #include "../types.cpp"
+#include "../txn.cpp"
 #include <iostream>
 using namespace blockchain;
 
