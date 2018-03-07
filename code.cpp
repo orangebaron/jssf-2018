@@ -49,6 +49,7 @@ RunOtp CodeMemory::run(GasAmt gasLimit) {
       cndjmp(JLE,1,<=);
       cndjmp(JGE,1,>=);
       command(SPEND,2,1,returnVal.moneySpent.push_back(TxnOtp(Pubkey(),ptrat(1))));
+      command(DEBUGPRINT,0,0,std::cout<<"DEBUG PRINT "<<codeLoc<<std::endl);
     }
   }
   return returnVal;

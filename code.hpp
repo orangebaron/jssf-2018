@@ -20,7 +20,8 @@ namespace blockchain {
     ADD,SUB,MULT,DIV,SHIFTR,SHIFTL,INV,
     AND,OR,XOR,NAND,NOR,XNOR,
     JMP,JE,JNE,JL,JG,JLE,JGE,
-    SPEND
+    SPEND,
+    DEBUGPRINT
   };
 }
 
