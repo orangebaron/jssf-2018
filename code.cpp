@@ -67,6 +67,7 @@ RunOtp CodeMemory::run(GasAmt gasLimit, const ExtraChainData& e, Pubkey p) {
 
 #include "valid_check.hpp"
 ContractCreation::ContractCreation(CodeMemory mem,Pubkey key): mem(mem), key(key) {}
+Pubkey ContractCreation::getKey() { return key; }
 Hash ContractCreation::getHash() const {
   return Hash();
 }

@@ -29,6 +29,10 @@ bool Txn::getValid(const ExtraChainData& e, ValidsChecked& v) const {
     if (!i.getValid(e,v)) return false;
     recieved += i.getAmt();
   }
+  for (auto i: contractCreations) {
+    if (!i.getValid(e,v)) return false;
+    sendersThatDidntSign[i.getKey()] = true;
+  }
   if (sent!=recieved) return false;
   for (auto i: sigs) {
     if (!i.getValid(*this)) return false;

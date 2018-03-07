@@ -31,6 +31,7 @@ namespace blockchain {
     Pubkey key;
   public:
     ContractCreation(CodeMemory,Pubkey);
+    Pubkey getKey();
     virtual Hash getHash() const;
     virtual bool getValid(const ExtraChainData&,ValidsChecked&) const;
     virtual void apply(ExtraChainData&) const;
