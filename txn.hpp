@@ -10,7 +10,6 @@ namespace blockchain {
   public:
     ContractCreation(CodeMemory,Pubkey);
     virtual Hash getHash() const;
-    virtual Hash getHashBeforeSig() const;
     virtual bool getValid(const ExtraChainData&,ValidsChecked&) const;
     virtual void apply(ExtraChainData&) const;
     virtual void unapply(ExtraChainData&) const;

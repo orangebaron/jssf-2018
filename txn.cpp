@@ -10,13 +10,16 @@ using namespace blockchain;
   return true;
 
 ContractCreation::ContractCreation(CodeMemory mem,Pubkey key): mem(mem), key(key) {}
+Hash ContractCreation::getHash() const {
+  return Hash();
+}
 bool ContractCreation::getValid(const ExtraChainData& e,ValidsChecked& v) const {
   validCheckBegin();
-  try { e.contractCodes.at(key); return false; } catch (...) {}
+  if (e.contractCodes.find(key)!=e.contractCodes.end()) return false;
   validCheckEnd();
 }
 void ContractCreation::apply(ExtraChainData& e) const {
-  e.contractCodes[key] = mem;
+  e.contractCodes.emplace(key,mem);
   e.contractMoney[key] = 0;
 }
 void ContractCreation::unapply(ExtraChainData& e) const {
