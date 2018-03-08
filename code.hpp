@@ -51,7 +51,7 @@ namespace blockchain {
     Pubkey getCaller() const;
     Pubkey getCalled() const;
     vector<unsigned int> getArgs() const;
-    TxnAmt getAmount() const;
+    TxnAmt getAmt() const;
     GasAmt getMaxGas() const;
     RunOtp getOtp(const ExtraChainData&);
   };

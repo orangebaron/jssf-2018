@@ -49,7 +49,10 @@ bool Txn::getValid(const ExtraChainData& e, ValidsChecked& v) const {
 void Txn::apply(ExtraChainData& e) const {
   for (auto i: inps) e.spentOutputs[i] = this;
   for (auto i: contractCreations) i.apply(e);
-  for (auto i: contractCalls) e.contractOtps[this].push_back(e.contractCodes.find(i.getCalled())->second.run(e,i));
+  for (auto i: contractCalls) {
+    e.contractMoney[i.getCalled()] += i.getAmt();
+    e.contractOtps[this].push_back(e.contractCodes.find(i.getCalled())->second.run(e,i));
+  }
   for (auto i: e.contractOtps[this]) {
     for (auto j: i.moneySpent) e.spentOutputs[&j] = this;
     for (auto j: i.storageChanged) j.apply(e);

@@ -100,7 +100,7 @@ bool ContractCall::getValid(const ExtraChainData& e,ValidsChecked& v) const {
 Pubkey ContractCall::getCaller() const { return caller; }
 Pubkey ContractCall::getCalled() const { return called; }
 vector<unsigned int> ContractCall::getArgs() const { return args; }
-TxnAmt ContractCall::getAmount() const { return amt; }
+TxnAmt ContractCall::getAmt() const { return amt; }
 GasAmt ContractCall::getMaxGas() const { return maxGas; }
 RunOtp ContractCall::getOtp(const ExtraChainData& e) {
   return e.contractCodes.find(called)->second.run(e,*this);
