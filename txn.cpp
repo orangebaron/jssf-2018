@@ -3,8 +3,8 @@
 using namespace blockchain;
 #include "valid_check.hpp"
 
-Txn::Txn(vector<const TxnOtp*> inps,vector<TxnOtp> otps,vector<ContractCreation> contractCreations,vector<Sig> sigs):
-  inps(inps),otps(otps),contractCreations(contractCreations),sigs(sigs) {}
+Txn::Txn(vector<const TxnOtp*> inps,vector<TxnOtp> otps,vector<ContractCreation> contractCreations,vector<ContractCall> contractCalls,vector<Sig> sigs):
+  inps(inps),otps(otps),contractCreations(contractCreations),contractCalls(contractCalls),sigs(sigs) {}
 Hash Txn::getHashBeforeSig() const {
   return Hash();
 }

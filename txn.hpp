@@ -11,7 +11,7 @@ namespace blockchain {
     vector<ContractCall> contractCalls;
     vector<Sig> sigs;
   public:
-    Txn(vector<const TxnOtp*>,vector<TxnOtp>,vector<ContractCreation>,vector<Sig>);
+    Txn(vector<const TxnOtp*>,vector<TxnOtp>,vector<ContractCreation>,vector<ContractCall>,vector<Sig>);
     virtual Hash getHash() const;
     virtual Hash getHashBeforeSig() const;
     virtual bool getValid(const ExtraChainData&,ValidsChecked&) const;
