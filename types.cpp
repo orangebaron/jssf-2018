@@ -6,7 +6,7 @@
 
 using namespace blockchain;
 #include <map>
-#include "valid_check.hpp"
+#include "common_macros.hpp"
 
 bool Pubkey::operator==(Pubkey p) const {
   return x==p.x;

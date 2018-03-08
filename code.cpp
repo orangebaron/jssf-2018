@@ -3,6 +3,7 @@
 
 #include "code.hpp"
 #include <iostream>
+#include "common_macros.hpp"
 using namespace blockchain;
 
 #define command(cmd,cost,aSize,code) \
@@ -69,7 +70,6 @@ RunOtp CodeMemory::run(const ExtraChainData& e, const ContractCall& caller) cons
   return returnVal;
 }
 
-#include "valid_check.hpp"
 ContractCreation::ContractCreation(CodeMemory mem,Pubkey key): mem(mem), key(key) {}
 Pubkey ContractCreation::getKey() { return key; }
 Hash ContractCreation::getHash() const {

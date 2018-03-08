@@ -4,7 +4,7 @@
 #include "code.hpp"
 
 namespace blockchain {
-  class Txn: public Hashable, public Validable, public Applyable {
+  class Txn: public Hashable, public Validable, public Applyable, public WorkRequired {
     vector<const TxnOtp*> inps;
     vector<TxnOtp> otps;
     vector<ContractCreation> contractCreations;
@@ -17,18 +17,21 @@ namespace blockchain {
     virtual bool getValid(const ExtraChainData&,ValidsChecked&) const;
     virtual void apply(ExtraChainData&) const;
     virtual void unapply(ExtraChainData&) const;
+    virtual WorkType getWork(WorkCalculated&) const;
     const vector<TxnOtp>& getOtps() const;
   };
-  class Block: public Hashable, public Validable, public Applyable {
+  class Block: public Hashable, public Validable, public Applyable, public WorkRequired {
     vector<Txn> txns;
     vector<Block*> approved;
-    int nonce;
+    //int nonce; TODO: are we gonna do legit hashes?
   public:
     Block(vector<Txn>,vector<Block*>);
     virtual Hash getHash() const;
     virtual bool getValid(const ExtraChainData&,ValidsChecked&) const;
     virtual void apply(ExtraChainData&) const;
     virtual void unapply(ExtraChainData&) const;
+    virtual WorkType getWork(WorkCalculated&) const;
+    WorkType getSumWork(WorkCalculated&) const;
     const vector<Txn>& getTxns() const;
   };
 }

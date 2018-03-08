@@ -33,7 +33,14 @@ namespace blockchain {
     virtual Hash getHash() const = 0;
     virtual Hash getHashBeforeSig() const { return Hash(); } // only write this func if thing is signed
   };
-  class Sig: public Hashable {
+  class WorkRequired;
+  typedef unsigned int WorkType;
+  typedef map<const WorkRequired*,WorkType> WorkCalculated;
+  class WorkRequired {
+  public:
+    virtual WorkType getWork(WorkCalculated&) const = 0;
+  };
+  class Sig: public Hashable, public WorkRequired {
     Pubkey pubkey;
     // more data here
   public:
@@ -41,11 +48,12 @@ namespace blockchain {
     Pubkey getPerson() const;
     virtual bool getValid(const Hashable&) const;
     virtual Hash getHash() const;
+    virtual WorkType getWork(WorkCalculated&) const;
   };
   class Txn;
   typedef unsigned int TxnAmt;
   typedef unsigned int GasAmt;
-  class TxnOtp: public Hashable, public Validable {
+  class TxnOtp: public Hashable, public Validable, public WorkRequired {
     Pubkey person;
     TxnAmt amt;
   public:
@@ -54,11 +62,13 @@ namespace blockchain {
     Pubkey getPerson() const;
     virtual Hash getHash() const;
     virtual bool getValid(const ExtraChainData&,ValidsChecked&) const;
+    virtual WorkType getWork(WorkCalculated&) const;
   };
-  class StorageChange: public Applyable {
+  class StorageChange: public Applyable, public WorkRequired {
     Pubkey person;
     unsigned int location;
     unsigned int value;
+    bool previouslyNull; //TODO
     unsigned int prevValue;
   public:
     StorageChange(Pubkey,unsigned int,unsigned int,unsigned int);
@@ -69,6 +79,7 @@ namespace blockchain {
     unsigned int getPrevValue() const;
     virtual void apply(ExtraChainData&) const;
     virtual void unapply(ExtraChainData&) const;
+    virtual WorkType getWork(WorkCalculated&) const;
   };
   class Txn;
   class CodeMemory;

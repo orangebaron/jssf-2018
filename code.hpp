@@ -27,7 +27,7 @@ namespace blockchain {
     MOV,SET,
     DEBUGPRINT
   };
-  class ContractCreation: public Hashable, public Validable, public Applyable {
+  class ContractCreation: public Hashable, public Validable, public Applyable, public WorkRequired {
     CodeMemory mem;
     Pubkey key;
   public:
@@ -37,8 +37,9 @@ namespace blockchain {
     virtual bool getValid(const ExtraChainData&,ValidsChecked&) const;
     virtual void apply(ExtraChainData&) const;
     virtual void unapply(ExtraChainData&) const;
+    virtual WorkType getWork(WorkCalculated&) const;
   };
-  class ContractCall: public Hashable, public Validable {
+  class ContractCall: public Hashable, public Validable, public WorkRequired {
     Pubkey caller;
     Pubkey called;
     vector<unsigned int> args;
@@ -48,6 +49,7 @@ namespace blockchain {
     ContractCall(Pubkey,Pubkey,vector<unsigned int>,TxnAmt,GasAmt);
     virtual Hash getHash() const;
     virtual bool getValid(const ExtraChainData&,ValidsChecked&) const;
+    virtual WorkType getWork(WorkCalculated&) const;
     Pubkey getCaller() const;
     Pubkey getCalled() const;
     vector<unsigned int> getArgs() const;

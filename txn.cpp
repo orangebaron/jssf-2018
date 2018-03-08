@@ -1,7 +1,7 @@
 #include "txn.hpp"
 
 using namespace blockchain;
-#include "valid_check.hpp"
+#include "common_macros.hpp"
 
 Txn::Txn(vector<const TxnOtp*> inps,vector<TxnOtp> otps,vector<ContractCreation> contractCreations,vector<ContractCall> contractCalls,vector<Sig> sigs):
   inps(inps),otps(otps),contractCreations(contractCreations),contractCalls(contractCalls),sigs(sigs) {}
@@ -66,6 +66,15 @@ void Txn::unapply(ExtraChainData& e) const {
     for (auto j: i.storageChanged) j.unapply(e);
   }
 }
+WorkType Txn::getWork(WorkCalculated& w) const {
+  getWorkBegin();
+  work += 3*inps.size();
+  for (auto i: otps) work += i.getWork(w);
+  for (auto i: contractCreations) work += i.getWork(w);
+  for (auto i: contractCalls) work += i.getWork(w);
+  for (auto i: sigs) work += i.getWork(w);
+  return work;
+}
 const vector<TxnOtp>& Txn::getOtps() const {
   return otps;
 }
@@ -76,8 +85,8 @@ Hash Block::getHash() const {
 }
 bool Block::getValid(const ExtraChainData& e, ValidsChecked& v) const {
   validCheckBegin();
-  for (auto i=txns.begin();i<txns.end();i++) if (!i->getValid(e,v)) return false;
-  for (auto i=approved.begin();i<approved.end();i++) if (!(*i)->getValid(e,v)) return false;
+  for (auto i: txns) if (!i.getValid(e,v)) return false;
+  for (auto i: approved) if (!i->getValid(e,v)) return false;
   // check nonce
   validCheckEnd();
 }
@@ -86,6 +95,16 @@ void Block::apply(ExtraChainData& e) const {
 }
 void Block::unapply(ExtraChainData& e) const {
   for (auto i: txns) i.unapply(e);
+}
+WorkType Block::getWork(WorkCalculated& w) const {
+  getWorkBegin();
+  for (auto i: txns) work += i.getWork(w);
+  return work;
+}
+WorkType Block::getSumWork(WorkCalculated& w) const {
+  WorkType work = this->getWork(w);
+  for (auto i: approved) work += i->getWork(w);
+  return work;
 }
 const vector<Txn>& Block::getTxns() const {
   return txns;
