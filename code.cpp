@@ -69,6 +69,7 @@ RunOtp CodeMemory::run(const ExtraChainData& e, const ContractCall& caller) cons
   } catch (...) {}
   return returnVal;
 }
+size_t CodeMemory::getMemSize() const { return memory.size(); }
 
 ContractCreation::ContractCreation(CodeMemory mem,Pubkey key): mem(mem), key(key) {}
 Pubkey ContractCreation::getKey() { return key; }
@@ -86,8 +87,8 @@ void ContractCreation::apply(ExtraChainData& e) const {
 }
 void ContractCreation::unapply(ExtraChainData& e) const {
   e.contractCodes.erase(key);
-  e.contractMoney.erase(key);
 }
+WorkType ContractCreation::getWork(WorkCalculated&) const { return 2*mem.getMemSize(); }
 
 ContractCall::ContractCall(Pubkey caller,Pubkey called,vector<unsigned int> args,TxnAmt amt,GasAmt maxGas):
   caller(caller),called(called),args(args),amt(amt),maxGas(maxGas) {}
@@ -105,5 +106,6 @@ GasAmt ContractCall::getMaxGas() const { return maxGas; }
 RunOtp ContractCall::getOtp(const ExtraChainData& e) {
   return e.contractCodes.find(called)->second.run(e,*this);
 }
+WorkType ContractCall::getWork(WorkCalculated&) const { return 5+(args.size()*2); }
 
 #endif

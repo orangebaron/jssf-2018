@@ -25,6 +25,7 @@ Hash Sig::getHash() const {
 bool Sig::getValid(const Hashable& h) const {
   return true;
 }
+WorkType Sig::getWork(WorkCalculated&) const { return 2; }
 
 TxnOtp::TxnOtp(Pubkey person,TxnAmt amt,ValidsChecked* v): person(person), amt(amt) {
   if (v != NULL) (*v)[this] = true;
@@ -42,6 +43,7 @@ TxnAmt TxnOtp::getAmt() const {
 Pubkey TxnOtp::getPerson() const {
   return person;
 }
+WorkType TxnOtp::getWork(WorkCalculated&) const { return 4; }
 
 StorageChange::StorageChange(Pubkey person,unsigned int location,unsigned int value,unsigned int prevValue):
   person(person), location(location), value(value), prevValue(prevValue) {}
@@ -59,5 +61,6 @@ void StorageChange::apply(ExtraChainData& e) const {
 void StorageChange::unapply(ExtraChainData& e) const {
   e.storage[person][location] = prevValue;
 }
+WorkType StorageChange::getWork(WorkCalculated&) const { return prevValue==0 ? 20 : 10; }
 
 #endif
