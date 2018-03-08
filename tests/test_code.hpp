@@ -2,7 +2,7 @@
 #define TEST_TXNS_HPP
 
 #include "unit_tests.hpp"
-#include "../code.cpp"
+#include "../chain/code.cpp"
 #include <iostream>
 using namespace blockchain;
 
