@@ -3,17 +3,23 @@
 
 #include <string>
 using std::string;
+#include <vector>
+using std::vector;
 
 namespace blockchain {
+  struct FileData {
+    char *data;
+    size_t len;
+  };
   class FileWrapper {
+    int file;
+    char *endPtr;
+    vector<FileData> idDataMap;
+  public:
     FileWrapper(string filename);
     ~FileWrapper();
-    struct FileData {
-      char *data;
-      size_t len;
-    };
-    int writeToFile(FileData data);
-    char* readFromFile(int id);
+    size_t write(FileData);
+    FileData read(size_t id);
   };
   class User {
     User(FileWrapper&, int txnsPerSecond, int fakesPerSecond);
