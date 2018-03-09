@@ -5,6 +5,8 @@
 using std::string;
 #include <vector>
 using std::vector;
+#include <thread>
+using std::thread;
 
 namespace blockchain {
   struct FileData {
@@ -22,10 +24,19 @@ namespace blockchain {
     FileData read(size_t id);
   };
   class User {
-    User(FileWrapper&, int txnsPerSecond, int fakesPerSecond);
+    thread t;
+    bool stop;
+    FileWrapper& f;
+    void genTxn(bool fake = false);
+  public:
+    User(FileWrapper&, int txnsPerSecond, int fakesPerSecond = 0);
     ~User();
   };
   class Miner {
+    thread t;
+    bool stop;
+    FileWrapper& f;
+  public:
     Miner(FileWrapper&,bool fake=false);
     ~Miner();
     bool blockAcceptedYet(int id);
