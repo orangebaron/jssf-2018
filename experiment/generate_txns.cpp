@@ -7,6 +7,7 @@
 #include <unistd.h>
 #include <algorithm>
 #include <chrono>
+#include <random>
 using namespace blockchain;
 
 FileWrapper::FileWrapper(string filename) {
@@ -27,14 +28,49 @@ FileData FileWrapper::read(size_t id) {
   return idDataMap.at(id);
 }
 
-void User::genTxn(bool fake) {
+TxnOtp* User::randomUnspentOutput(vector<const TxnOtp*>& dontUse) { return NULL; } //TODO
+Txn User::randTxn(bool fake) {
+  std::random_device r;
+  std::default_random_engine gen(r());
 
+  enum txnType:int { transfer,contCreate,contCall };
+
+  vector<const TxnOtp*> inps;
+  vector<TxnOtp> otps;
+  vector<ContractCreation> contractCreations;
+  vector<ContractCall> contractCalls;
+  vector<Sig> sigs;
+
+  int len = std::uniform_int_distribution<>(1,10)(gen);
+  std::uniform_int_distribution<> randTxnType(1,3);
+  for (int _ = 0; _ < len; _++) {
+    switch ((txnType)randTxnType(gen)){
+    case transfer:
+      if (numUnspentOutputs() > inps.size()) {
+        inps.push_back(randomUnspentOutput(inps)); //choose random input
+        otps.push_back(TxnOtp(randomPubkey(),
+          std::uniform_int_distribution<>(1, inps.back()->getAmt() )(gen) )); //output is random amount [1,input.amount]
+        otps.push_back(TxnOtp(randomPubkey(),
+          inps.back()->getAmt() - otps.back().getAmt() )); //amount is input.amount - last output.amount
+        sigs.push_back(Sig(inps.back()->getPerson()));
+      }
+      break;
+    case contCreate:
+      contractCreations.push_back(randomContCreation());
+      break;
+    case contCall:
+      contractCalls.push_back(randomContCall());
+      sigs.push_back(Sig(contractCalls.back().getCaller()));
+      break;
+    }
+  }
+  return Txn(inps,otps,contractCreations,contractCalls,sigs);
 }
 User::User(FileWrapper& f, int txnsPerSecond, int fakesPerSecond): f(f) {
   t = thread([](User* user,int txnsPerSecond,int fakesPerSecond) {
     std::chrono::milliseconds ms(1000/(txnsPerSecond+fakesPerSecond));
     for (int counter=0; !user->stop; counter=(counter+1)%(txnsPerSecond+fakesPerSecond)) {
-      user->genTxn(counter<txnsPerSecond);
+      Txn t = user->randTxn(counter<txnsPerSecond); // do things with it
       std::this_thread::sleep_for(ms);
     }
   },this,txnsPerSecond,fakesPerSecond);

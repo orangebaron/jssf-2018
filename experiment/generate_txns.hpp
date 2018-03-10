@@ -7,6 +7,7 @@ using std::string;
 using std::vector;
 #include <thread>
 using std::thread;
+#include "../chain/txn.hpp"
 
 namespace blockchain {
   struct FileData {
@@ -27,7 +28,12 @@ namespace blockchain {
     thread t;
     bool stop;
     FileWrapper& f;
-    void genTxn(bool fake = false);
+    Txn randTxn(bool fake = false);
+    size_t numUnspentOutputs();
+    TxnOtp* randomUnspentOutput(vector<const TxnOtp*>& dontUse);
+    Pubkey randomPubkey();
+    ContractCreation randomContCreation();
+    ContractCall randomContCall();
   public:
     User(FileWrapper&, int txnsPerSecond, int fakesPerSecond = 0);
     ~User();
