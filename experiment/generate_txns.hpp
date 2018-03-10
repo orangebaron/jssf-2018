@@ -33,7 +33,6 @@ namespace blockchain {
     size_t numUnspentOutputs();
     TxnOtp* randomUnspentOutput(vector<const TxnOtp*>& dontUse);
     Pubkey randomPubkey();
-    ContractCreation randomContCreation();
     Pubkey randomContKey();
     vector<unsigned int> randIntVector(size_t minSize,size_t maxSize);
   public:

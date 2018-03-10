@@ -46,6 +46,7 @@ Txn User::randTxn(bool fake) {
   std::uniform_int_distribution<> randTxnType(1,3);
   std::uniform_int_distribution<> randGas(10,100);
   for (int _ = 0; _ < len; _++) {
+    Pubkey sig;
     switch ((txnType)randTxnType(gen)){
     case transfer:
       if (numUnspentOutputs() > inps.size()) {
@@ -54,6 +55,7 @@ Txn User::randTxn(bool fake) {
           std::uniform_int_distribution<>(1, inps.back()->getAmt() )(gen) )); //output is random amount [1,input.amount]
         otps.push_back(TxnOtp(randomPubkey(),
           inps.back()->getAmt() - otps.back().getAmt() )); //amount is input.amount - last output.amount
+        sig = inps.back()->getPerson();
         if (!pubkeysSigned[inps.back()->getPerson()]) {
           pubkeysSigned[inps.back()->getPerson()] = true;
           sigs.push_back(Sig(inps.back()->getPerson()));
@@ -61,24 +63,29 @@ Txn User::randTxn(bool fake) {
       }
       break;
     case contCreate:
-      contractCreations.push_back(randomContCreation());
+      sig = randomPubkey();
+      contractCreations.push_back(ContractCreation(
+        CodeMemory(randIntVector(10,50)),
+        sig
+      ));
       break;
     case contCall:
       if (numUnspentOutputs() > inps.size()) {
         inps.push_back(randomUnspentOutput(inps)); //choose random input
+        sig = inps.back()->getPerson();
         contractCalls.push_back(ContractCall(
-          /*Caller:*/ inps.back()->getPerson(),
+          /*Caller:*/ sig,
           /*Called:*/ randomContKey(),
           /*Args:  */ randIntVector(0,5),
           /*Amt:   */ inps.back()->getAmt(),
           /*MaxGas:*/ randGas(gen)
         ));
-        if (!pubkeysSigned[inps.back()->getPerson()]) {
-          pubkeysSigned[inps.back()->getPerson()] = true;
-          sigs.push_back(Sig(inps.back()->getPerson()));
-        }
       }
       break;
+    }
+    if (!pubkeysSigned[sig]) {
+      pubkeysSigned[sig] = true;
+      sigs.push_back(Sig(sig));
     }
   }
   return Txn(inps,otps,contractCreations,contractCalls,sigs);
