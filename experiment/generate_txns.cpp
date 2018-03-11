@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <chrono>
 #include <random>
+#include <climits>
 using namespace blockchain;
 
 FileWrapper::FileWrapper(string filename) {
@@ -29,6 +30,19 @@ FileData FileWrapper::read(size_t id) {
 }
 
 TxnOtp* User::randomUnspentOutput(vector<const TxnOtp*>& dontUse) { return NULL; } //TODO
+Pubkey User::randomPubkey() {
+  std::random_device r;
+  std::default_random_engine gen(r());
+  return Pubkey(std::uniform_int_distribution<>(INT_MIN,INT_MAX)(gen));
+}
+Pubkey User::randomContKey() {
+  std::random_device r;
+  std::default_random_engine gen(r());
+  return (std::next(e.contractMoney.begin(),
+    std::uniform_int_distribution<>(0,e.contractMoney.size())(gen))
+    ->first
+  );
+}
 Txn User::randTxn(bool fake) {
   std::random_device r;
   std::default_random_engine gen(r());
