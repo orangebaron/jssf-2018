@@ -24,11 +24,23 @@ namespace blockchain {
     size_t write(FileData);
     FileData read(size_t id);
   };
+  enum GraphType { DAG,blocks };
+  enum ApprovalType { allApprove,rwdPunishment };
+  struct ChainType {
+    GraphType graphType;
+    ApprovalType approvalType;
+    bool operator==(ChainType& c) { return c.graphType==graphType && c.approvalType==approvalType; }
+  };
+  const ChainType Expt1 = ChainType{blocks,allApprove};
+  const ChainType Expt2 = ChainType{DAG,allApprove};
+  const ChainType Expt3 = ChainType{blocks,rwdPunishment};
+  const ChainType Expt4 = ChainType{DAG,rwdPunishment};
   class User {
     thread t;
     bool stop;
     FileWrapper& f;
     ExtraChainData& e;
+    ChainType chainType;
     Txn randTxn(bool fake = false);
     size_t numUnspentOutputs();
     TxnOtp* randomUnspentOutput(vector<const TxnOtp*>& dontUse);
@@ -36,17 +48,25 @@ namespace blockchain {
     Pubkey randomContKey();
     vector<unsigned int> randIntVector(size_t minSize,size_t maxSize);
   public:
-    User(ExtraChainData&, FileWrapper&, int txnsPerSecond, int fakesPerSecond = 0);
+    User(ExtraChainData&, FileWrapper&, int txnsPerSecond, ChainType, int fakesPerSecond = 0);
     ~User();
   };
+  class Miner;
+  typedef vector<Miner*> MinerList;
   class Miner {
     thread t;
     bool stop;
     FileWrapper& f;
+    vector<Block> chain;
+    ChainType chainType;
+    MinerList& miners;
+    vector<Txn>* currentBlock; //TODO initialize and delete
+    bool checkTxn(const Txn&);
   public:
-    Miner(FileWrapper&,bool fake=false);
+    Miner(FileWrapper&, ChainType, MinerList&, bool fake=false);
     ~Miner();
-    bool blockAcceptedYet(int id);
+    void recieveTxn(const Txn&);
+    bool txnAcceptedYet(int id);
   };
 }
 

@@ -104,7 +104,8 @@ Txn User::randTxn(bool fake) {
   }
   return Txn(inps,otps,contractCreations,contractCalls,sigs);
 }
-User::User(ExtraChainData& e, FileWrapper& f, int txnsPerSecond, int fakesPerSecond): f(f), e(e) {
+User::User(ExtraChainData& e, FileWrapper& f, int txnsPerSecond, ChainType chainType, int fakesPerSecond):
+  f(f),e(e),chainType(chainType) {
   t = thread([](User* user,int txnsPerSecond,int fakesPerSecond) {
     std::chrono::milliseconds ms(1000/(txnsPerSecond+fakesPerSecond));
     for (int counter=0; !user->stop; counter=(counter+1)%(txnsPerSecond+fakesPerSecond)) {
@@ -118,7 +119,8 @@ User::~User() {
   t.join();
 }
 
-Miner::Miner(FileWrapper& f, bool fake): f(f) {
+Miner::Miner(FileWrapper& f, ChainType chainType, MinerList& miners, bool fake):
+  f(f),chainType(chainType),miners(miners) {
   t = thread([](Miner* miner,bool fake) {
     while (!miner->stop) {}
   },this,fake);
@@ -126,6 +128,16 @@ Miner::Miner(FileWrapper& f, bool fake): f(f) {
 Miner::~Miner() {
   stop = true;
   t.join();
+}
+void Miner::recieveTxn(const Txn& t) {
+  if (chainType.graphType == blocks) {
+    if (checkTxn(t)) {
+      currentBlock->push_back(t);
+      for (auto i: miners) if (i!=this) i->recieveTxn(t);
+    }
+  } else {
+
+  }
 }
 
 #endif

@@ -23,6 +23,7 @@ namespace blockchain {
   class Block: public Hashable, public Validable, public Applyable, public WorkRequired {
     vector<Txn> txns;
     vector<Block*> approved;
+    ExtraChainData extraDataAfterBlock;
     //int nonce; TODO: are we gonna do legit hashes?
   public:
     Block(vector<Txn>,vector<Block*>);
@@ -33,6 +34,7 @@ namespace blockchain {
     virtual WorkType getWork(WorkCalculated&) const;
     WorkType getSumWork(WorkCalculated&) const;
     const vector<Txn>& getTxns() const;
+    const ExtraChainData& getExtraDataAfterBlock();
   };
 }
 
