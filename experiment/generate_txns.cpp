@@ -13,7 +13,7 @@ using namespace blockchain;
 
 FileWrapper::FileWrapper(string filename) {
   file = open(filename.c_str(),O_RDWR);
-  endPtr = (char*)mmap(NULL,1/*size*/,PROT_READ|PROT_WRITE,MAP_SHARED,file,0);
+  endPtr = (char*)mmap(nullptr,1/*size*/,PROT_READ|PROT_WRITE,MAP_SHARED,file,0);
 }
 FileWrapper::~FileWrapper() {
   close(file);
@@ -29,7 +29,7 @@ FileData FileWrapper::read(size_t id) {
   return idDataMap.at(id);
 }
 
-TxnOtp* User::randomUnspentOutput(vector<const TxnOtp*>& dontUse) { return NULL; } //TODO
+TxnOtp* User::randomUnspentOutput(vector<const TxnOtp*>& dontUse) { return nullptr; } //TODO
 Pubkey User::randomPubkey() {
   std::random_device r;
   std::default_random_engine gen(r());

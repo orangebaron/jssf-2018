@@ -60,11 +60,11 @@ void Txn::apply(ExtraChainData& e) const {
   }
 }
 void Txn::unapply(ExtraChainData& e) const {
-  for (auto i: inps) if (e.spentOutputs[i] == this) e.spentOutputs[i] = NULL;
+  for (auto i: inps) if (e.spentOutputs[i] == this) e.spentOutputs[i] = nullptr;
   for (auto i: contractCreations) i.unapply(e);
   for (auto i: contractCalls) e.contractMaxIds[i.getCalled()].erase(i.getId());
   for (auto i: e.contractOtps[this]) {
-    for (auto j: i.moneySpent) if (e.spentOutputs[&j] == this) e.spentOutputs[&j] = NULL;
+    for (auto j: i.moneySpent) if (e.spentOutputs[&j] == this) e.spentOutputs[&j] = nullptr;
     for (auto j: i.storageChanged) j.unapply(e);
   }
 }

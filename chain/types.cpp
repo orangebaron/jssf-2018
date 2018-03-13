@@ -28,7 +28,7 @@ bool Sig::getValid(const Hashable& h) const {
 WorkType Sig::getWork(WorkCalculated&) const { return 2; }
 
 TxnOtp::TxnOtp(Pubkey person,TxnAmt amt,ValidsChecked* v): person(person), amt(amt) {
-  if (v != NULL) (*v)[this] = true;
+  if (v != nullptr) (*v)[this] = true;
 }
 Hash TxnOtp::getHash() const {
   return Hash();

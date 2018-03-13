@@ -57,7 +57,7 @@ namespace blockchain {
     Pubkey person;
     TxnAmt amt;
   public:
-    TxnOtp(Pubkey,TxnAmt,ValidsChecked* = NULL /*only give a value if it's origin*/);
+    TxnOtp(Pubkey,TxnAmt,ValidsChecked* = nullptr /*only give a value if it's origin*/);
     TxnAmt getAmt() const;
     Pubkey getPerson() const;
     virtual Hash getHash() const;
@@ -92,6 +92,7 @@ namespace blockchain {
     map<Pubkey,TxnAmt> contractMoney;
     map<Pubkey,map<unsigned int,const ContractCall*>> contractMaxIds;
     map<const Txn*,vector<RunOtp>> contractOtps;
+
   };
 }
 
