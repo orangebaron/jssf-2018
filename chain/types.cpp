@@ -2,6 +2,7 @@
 #define TYPES_CPP
 
 #include "types.hpp"
+#include "code.hpp"
 #include <iostream>
 
 using namespace blockchain;
@@ -62,5 +63,42 @@ void StorageChange::unapply(ExtraChainData& e) const {
   e.storage[person][location] = prevValue;
 }
 WorkType StorageChange::getWork(WorkCalculated&) const { return prevValue==0 ? 20 : 10; }
+
+ExtraChainData ExtraChainData::merge(ExtraChainData& e) { //CHECK ALL OF THIS
+  ExtraChainData a = {
+    map<const TxnOtp*,const Txn*>(spentOutputs),
+    map<Pubkey,map<unsigned int,unsigned int>>(storage),
+    map<Pubkey,CodeMemory>(contractCodes),
+    map<Pubkey,TxnAmt>(contractMoney),
+    map<Pubkey,map<unsigned int,const ContractCall*>>(),
+    map<const Txn*,vector<RunOtp>>(contractOtps)
+  };
+  for (auto i: contractMaxIds) a.contractMaxIds[i.first] = map<unsigned int,const ContractCall*>(i.second);
+  for (auto i: e.spentOutputs) {
+    if (a.spentOutputs.find(i.first)==a.spentOutputs.end()) a.spentOutputs[i.first] = i.second;
+    else if (a.spentOutputs[i.first]!=i.second) throw nullptr;
+  }
+  for (auto i: e.contractMaxIds) {
+    bool copyElems = true;
+    if (a.contractMaxIds.find(i.first)!=a.contractMaxIds.end()) {
+      if (a.contractMaxIds[i.first].size()<i.second.size()) {
+        if (i.second[a.contractMaxIds[i.first].size()-1]!=(*(--a.contractMaxIds[i.first].end())).second) throw nullptr; //CHECK THIS
+      } else {
+        if (a.contractMaxIds[i.first][i.second.size()-1]!=(*(--i.second.end())).second) throw nullptr; //CHECK THIS
+        copyElems = false;
+      }
+    } else {
+      a.contractCodes.emplace(i.first,CodeMemory(e.contractCodes[i.first]));
+    }
+    if (copyElems) {
+      a.storage[i.first]=e.storage[i.first];
+      a.contractMoney[i.first]=e.contractMoney[i.first];
+      a.contractMaxIds[i.first]=map<unsigned int,const ContractCall*>(i.second);
+    }
+  }
+  for (auto i: e.contractOtps)
+    if (a.contractOtps.find(i.first)==a.contractOtps.end()) a.contractOtps[i.first] = vector<RunOtp>(i.second);
+  return a;
+}
 
 #endif

@@ -14,7 +14,9 @@ namespace blockchain {
     size_t location = 0;
     vector<unsigned int> memory;
   public:
-    CodeMemory(vector<unsigned int> memory);
+    CodeMemory();
+    CodeMemory(const vector<unsigned int> memory);
+    CodeMemory(const CodeMemory&);
     RunOtp run(const ExtraChainData& e, const ContractCall& caller) const;
     size_t getMemSize() const;
   };

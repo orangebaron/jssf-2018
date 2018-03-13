@@ -21,7 +21,9 @@ break;
 #define invboolcmd(cmd,cost,x) command(cmd,cost,2,ptrat(1) = !(ptrat(1) x ptrat(2)))
 #define cndjmp(cmd,cost,x) command(cmd,cost,1,if((int)ptrat(1) x 0) {codeLoc = memat(2); justJumped = true;})
 
-CodeMemory::CodeMemory(vector<unsigned int> memory): memory(memory) {}
+CodeMemory::CodeMemory() {}
+CodeMemory::CodeMemory(const vector<unsigned int> memory) { this->memory = vector<unsigned int>(memory); }
+CodeMemory::CodeMemory(const CodeMemory& c): CodeMemory(c.memory) {}
 RunOtp CodeMemory::run(const ExtraChainData& e, const ContractCall& caller) const {
   vector<unsigned int> memory = this->memory;
   RunOtp returnVal;

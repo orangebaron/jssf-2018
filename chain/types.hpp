@@ -92,7 +92,7 @@ namespace blockchain {
     map<Pubkey,TxnAmt> contractMoney;
     map<Pubkey,map<unsigned int,const ContractCall*>> contractMaxIds;
     map<const Txn*,vector<RunOtp>> contractOtps;
-
+    ExtraChainData merge(ExtraChainData&); //throws exception if can't
   };
 }
 
