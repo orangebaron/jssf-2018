@@ -111,3 +111,6 @@ WorkType Block::getSumWork(WorkCalculated& w) const {
 const vector<Txn>& Block::getTxns() const {
   return txns;
 }
+vector<Block*> Block::getApproved() {
+  return vector<Block*>(approved);
+}

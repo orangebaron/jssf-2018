@@ -59,6 +59,7 @@ Txn User::randTxn(bool fake) {
   int len = std::uniform_int_distribution<>(1,10)(gen);
   std::uniform_int_distribution<> randTxnType(1,3);
   std::uniform_int_distribution<> randGas(10,100);
+  std::uniform_int_distribution<> randId(0,INT_MAX);
   for (int _ = 0; _ < len; _++) {
     Pubkey sig;
     switch ((txnType)randTxnType(gen)){
@@ -92,7 +93,8 @@ Txn User::randTxn(bool fake) {
           /*Called:*/ randomContKey(),
           /*Args:  */ randIntVector(0,5),
           /*Amt:   */ inps.back()->getAmt(),
-          /*MaxGas:*/ randGas(gen)
+          /*MaxGas:*/ randGas(gen),
+          /*ID:    */ randId(gen)
         ));
       }
       break;
@@ -130,15 +132,21 @@ Miner::~Miner() {
   t.join();
 }
 void Miner::recieveTxn(const Txn& t) {
+  if (!t.getValid(currentState,validsChecked)) return;
   if (chainType.graphType == blocks) {
-    if (t.getValid(currentState,validsChecked)) {
-      currentBlock->push_back(t);
-      for (auto i: miners) if (i!=this) i->recieveTxn(t);
-      if (chainType.approvalType==allApprove) t.apply(currentState);
-    }
+    currentBlock->push_back(t);
+    for (auto i: miners) if (i!=this) i->recieveTxn(t);
+    t.apply(currentState);
   } else {
-
   }
+}
+void Miner::recieveBlock(Block& b) {
+  if (!b.getValid(currentState,validsChecked)) return;
+  for (auto i=unapprovedBlocks.begin();i!=unapprovedBlocks.end();i++)
+    for (auto j: b.getApproved())
+      if (*i==j) { unapprovedBlocks.erase(i); i--; }
+  b.apply(currentState);
+  for (auto m: miners) m->recieveBlock(b); //PROBLEM: blocks have pointers etc to other blocks, which other miners will have different
 }
 
 #endif

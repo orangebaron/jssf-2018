@@ -35,6 +35,7 @@ namespace blockchain {
     WorkType getSumWork(WorkCalculated&) const;
     const vector<Txn>& getTxns() const;
     const ExtraChainData& getExtraDataAfterBlock();
+    vector<Block*> getApproved();
   };
 }
 

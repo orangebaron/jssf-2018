@@ -58,6 +58,7 @@ namespace blockchain {
     bool stop;
     FileWrapper& f;
     vector<Block> chain;
+    vector<Block*> unapprovedBlocks;
     ChainType chainType;
     MinerList& miners;
     vector<Txn>* currentBlock; //TODO initialize and delete
@@ -68,6 +69,7 @@ namespace blockchain {
     Miner(FileWrapper&, ChainType, MinerList&, bool fake=false);
     ~Miner();
     void recieveTxn(const Txn&);
+    void recieveBlock(Block&);
     bool txnAcceptedYet(int id);
   };
 }
