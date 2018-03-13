@@ -90,6 +90,7 @@ namespace blockchain {
     map<Pubkey,map<unsigned int,unsigned int>> storage;
     map<Pubkey,CodeMemory> contractCodes;
     map<Pubkey,TxnAmt> contractMoney;
+    map<Pubkey,unsigned int> contractMaxIds;
     map<const Txn*,vector<RunOtp>> contractOtps;
   };
 }

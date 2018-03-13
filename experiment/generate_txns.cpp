@@ -131,9 +131,10 @@ Miner::~Miner() {
 }
 void Miner::recieveTxn(const Txn& t) {
   if (chainType.graphType == blocks) {
-    if (checkTxn(t)) {
+    if (t.getValid(currentState,validsChecked)) {
       currentBlock->push_back(t);
       for (auto i: miners) if (i!=this) i->recieveTxn(t);
+      if (chainType.approvalType==allApprove) t.apply(currentState);
     }
   } else {
 

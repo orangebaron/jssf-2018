@@ -46,8 +46,9 @@ namespace blockchain {
     vector<unsigned int> args;
     TxnAmt amt;
     GasAmt maxGas;
+    unsigned long id;
   public:
-    ContractCall(Pubkey,Pubkey,vector<unsigned int>,TxnAmt,GasAmt);
+    ContractCall(Pubkey,Pubkey,vector<unsigned int>,TxnAmt,GasAmt,unsigned long);
     virtual Hash getHash() const;
     virtual bool getValid(const ExtraChainData&,ValidsChecked&) const;
     virtual WorkType getWork(WorkCalculated&) const;
@@ -56,6 +57,7 @@ namespace blockchain {
     vector<unsigned int> getArgs() const;
     TxnAmt getAmt() const;
     GasAmt getMaxGas() const;
+    unsigned long getId() const;
     RunOtp getOtp(const ExtraChainData&);
   };
 }

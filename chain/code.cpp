@@ -83,6 +83,7 @@ bool ContractCreation::getValid(const ExtraChainData& e,ValidsChecked& v) const 
 }
 void ContractCreation::apply(ExtraChainData& e) const {
   e.contractCodes.emplace(key,mem);
+  e.contractMaxIds[key] = 0;
   e.contractMoney[key] = 0;
 }
 void ContractCreation::unapply(ExtraChainData& e) const {
@@ -90,12 +91,13 @@ void ContractCreation::unapply(ExtraChainData& e) const {
 }
 WorkType ContractCreation::getWork(WorkCalculated&) const { return 2*mem.getMemSize(); }
 
-ContractCall::ContractCall(Pubkey caller,Pubkey called,vector<unsigned int> args,TxnAmt amt,GasAmt maxGas):
-  caller(caller),called(called),args(args),amt(amt),maxGas(maxGas) {}
+ContractCall::ContractCall(Pubkey caller,Pubkey called,vector<unsigned int> args,TxnAmt amt,GasAmt maxGas,unsigned long id):
+  caller(caller),called(called),args(args),amt(amt),maxGas(maxGas),id(id) {}
 Hash ContractCall::getHash() const { return Hash(); }
 bool ContractCall::getValid(const ExtraChainData& e,ValidsChecked& v) const {
   validCheckBegin();
   if (e.contractCodes.find(called) == e.contractCodes.end()) return false;
+  if (e.contractMaxIds.at(called)+1!=id) return false;
   validCheckEnd();
 }
 Pubkey ContractCall::getCaller() const { return caller; }
@@ -106,6 +108,7 @@ GasAmt ContractCall::getMaxGas() const { return maxGas; }
 RunOtp ContractCall::getOtp(const ExtraChainData& e) {
   return e.contractCodes.find(called)->second.run(e,*this);
 }
+unsigned long ContractCall::getId() const { return id; }
 WorkType ContractCall::getWork(WorkCalculated&) const { return 5+(args.size()*2); }
 
 #endif

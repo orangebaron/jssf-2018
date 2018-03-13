@@ -61,6 +61,8 @@ namespace blockchain {
     ChainType chainType;
     MinerList& miners;
     vector<Txn>* currentBlock; //TODO initialize and delete
+    ExtraChainData currentState;
+    ValidsChecked validsChecked;
     bool checkTxn(const Txn&);
   public:
     Miner(FileWrapper&, ChainType, MinerList&, bool fake=false);
