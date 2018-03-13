@@ -83,7 +83,7 @@ bool ContractCreation::getValid(const ExtraChainData& e,ValidsChecked& v) const 
 }
 void ContractCreation::apply(ExtraChainData& e) const {
   e.contractCodes.emplace(key,mem);
-  e.contractMaxIds[key] = 0;
+  e.contractMaxIds[key];
   e.contractMoney[key] = 0;
 }
 void ContractCreation::unapply(ExtraChainData& e) const {
@@ -97,7 +97,8 @@ Hash ContractCall::getHash() const { return Hash(); }
 bool ContractCall::getValid(const ExtraChainData& e,ValidsChecked& v) const {
   validCheckBegin();
   if (e.contractCodes.find(called) == e.contractCodes.end()) return false;
-  if (e.contractMaxIds.at(called)+1!=id) return false;
+  try { e.contractMaxIds.at(called).at(id); return false; } catch (...){}
+  try { e.contractMaxIds.at(called).at(id-1); } catch (...) { return false; }
   validCheckEnd();
 }
 Pubkey ContractCall::getCaller() const { return caller; }
