@@ -85,8 +85,7 @@ namespace blockchain {
   class CodeMemory;
   class RunOtp;
   class ContractCall;
-  class ExtraChainData {
-  public:
+  struct ExtraChainData {
     map<const TxnOtp*,const Txn*> spentOutputs;
     map<Pubkey,map<unsigned int,unsigned int>> storage;
     map<Pubkey,CodeMemory> contractCodes;
