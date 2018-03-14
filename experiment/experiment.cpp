@@ -99,9 +99,15 @@ User::~User() {
 
 Miner::Miner(ChainType chainType, MinerList& miners, bool fake):
   chainType(chainType),miners(miners) {
-  t = thread([](Miner* miner,bool fake) {
-    while (!miner->stop) {}
-  },this,fake);
+  t = thread([this,fake]() {
+    std::random_device r;
+    std::default_random_engine gen(r());
+    std::uniform_int_distribution<> minedNumGen(INT_MIN,INT_MAX);
+    while (!stop) {
+      //if (minedNumGen(gen)%/*difficulty*/65 == 0)
+        //recieveBlock(Block(currentBlock,{&*chain.back()}),currentState);
+    }
+  });
 }
 Miner::~Miner() {
   stop = true;
@@ -127,12 +133,12 @@ void Miner::recieveBlock(Block& b,const ExtraChainData& e) {
   if (!b.getValid(currentState,validsChecked)) return;
   vector<Txn> txns(b.getTxns());
   vector<Block*> approved(b.getApproved());
-  for (auto i = txns.begin(); i!=txns.end(); i++) {
+  for (auto i = b.getTxns().begin(); i!=b.getTxns().end(); i++) {
     auto& t = *i;
     vector<const TxnOtp*> inps(t.getInps());
     for (size_t j = 0;j<approved.size();j++)
       inps[j] = (TxnOtp*)currentState.IDsReverse[e.IDs.at(inps[j])];
-    txns.emplace(i,Txn(
+    txns.push_back(Txn(
       inps,
       t.getOtps(),
       t.getContractCreations(),
