@@ -21,23 +21,22 @@ namespace blockchain {
   const ChainType Expt2 = ChainType{DAG,allApprove};
   const ChainType Expt3 = ChainType{blocks,rwdPunishment};
   const ChainType Expt4 = ChainType{DAG,rwdPunishment};
+  class Miner;
+  typedef vector<Miner*> MinerList;
   class User {
     thread t;
     bool stop;
-    ExtraChainData& e;
     ChainType chainType;
-    Txn randTxn(bool fake = false);
+    MinerList& miners;
+    Txn randTxn(Miner&,bool fake = false);
     size_t numUnspentOutputs();
     TxnOtp* randomUnspentOutput(vector<const TxnOtp*>& dontUse);
     Pubkey randomPubkey();
-    Pubkey randomContKey();
     vector<unsigned int> randIntVector(size_t minSize,size_t maxSize);
   public:
-    User(ExtraChainData&, int txnsPerSecond, ChainType, int fakesPerSecond = 0);
+    User(MinerList&,int txnsPerSecond, ChainType, int fakesPerSecond = 0);
     ~User();
   };
-  class Miner;
-  typedef vector<Miner*> MinerList;
   class Miner {
     thread t;
     bool stop;
@@ -55,6 +54,7 @@ namespace blockchain {
     void recieveTxn(const Txn&);
     void recieveBlock(Block&);
     bool txnAcceptedYet(int id);
+    Pubkey randomContKey();
   };
 }
 

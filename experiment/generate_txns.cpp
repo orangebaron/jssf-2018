@@ -14,15 +14,7 @@ Pubkey User::randomPubkey() {
   std::default_random_engine gen(r());
   return Pubkey(std::uniform_int_distribution<>(INT_MIN,INT_MAX)(gen));
 }
-Pubkey User::randomContKey() {
-  std::random_device r;
-  std::default_random_engine gen(r());
-  return (std::next(e.contractMoney.begin(),
-    std::uniform_int_distribution<>(0,e.contractMoney.size())(gen))
-    ->first
-  );
-}
-Txn User::randTxn(bool fake) {
+Txn User::randTxn(Miner& m, bool fake) {
   std::random_device r;
   std::default_random_engine gen(r());
 
@@ -69,7 +61,7 @@ Txn User::randTxn(bool fake) {
         sig = inps.back()->getPerson();
         contractCalls.push_back(ContractCall(
           /*Caller:*/ sig,
-          /*Called:*/ randomContKey(),
+          /*Called:*/ m.randomContKey(),
           /*Args:  */ randIntVector(0,5),
           /*Amt:   */ inps.back()->getAmt(),
           /*MaxGas:*/ randGas(gen),
@@ -85,15 +77,20 @@ Txn User::randTxn(bool fake) {
   }
   return Txn(inps,otps,contractCreations,contractCalls,sigs);
 }
-User::User(ExtraChainData& e, int txnsPerSecond, ChainType chainType, int fakesPerSecond):
-  e(e),chainType(chainType) {
-  t = thread([](User* user,int txnsPerSecond,int fakesPerSecond) {
+User::User(MinerList& miners, int txnsPerSecond, ChainType chainType, int fakesPerSecond):
+  chainType(chainType), miners(miners) {
+  t = thread([this,miners,txnsPerSecond,fakesPerSecond]() {
     std::chrono::milliseconds ms(1000/(txnsPerSecond+fakesPerSecond));
-    for (int counter=0; !user->stop; counter=(counter+1)%(txnsPerSecond+fakesPerSecond)) {
-      Txn t = user->randTxn(counter<txnsPerSecond); // do things with it
+
+    std::random_device r;
+    std::default_random_engine gen(r());
+    std::uniform_int_distribution<> minerNumGen(1,10);
+    for (int counter=0; !stop; counter=(counter+1)%(txnsPerSecond+fakesPerSecond)) {
+      Miner& m = *miners[minerNumGen(gen)];
+      m.recieveTxn(randTxn(m,counter<txnsPerSecond)); // do things with it
       std::this_thread::sleep_for(ms);
     }
-  },this,txnsPerSecond,fakesPerSecond);
+  });
 }
 User::~User() {
   stop = true;
@@ -133,6 +130,14 @@ void Miner::recieveBlock(Block& b) {
       if (*i==j) { unapprovedBlocks.erase(i); i--; }
   b.apply(currentState);
   for (auto m: miners) m->recieveBlock(b); //PROBLEM: blocks have pointers etc to other blocks, which other miners will have different
+}
+Pubkey Miner::randomContKey() {
+  std::random_device r;
+  std::default_random_engine gen(r());
+  return (std::next(currentState.contractMoney.begin(),
+    std::uniform_int_distribution<>(0,currentState.contractMoney.size())(gen))
+    ->first
+  );
 }
 
 #endif
