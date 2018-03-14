@@ -104,8 +104,10 @@ Miner::Miner(ChainType chainType, MinerList& miners, bool fake):
     std::default_random_engine gen(r());
     std::uniform_int_distribution<> minedNumGen(INT_MIN,INT_MAX);
     while (!stop) {
-      //if (minedNumGen(gen)%/*difficulty*/65 == 0)
-        //recieveBlock(Block(currentBlock,{&*chain.back()}),currentState);
+      if (minedNumGen(gen)%/*difficulty*/65 == 0) {
+        Block b(*currentBlock,{&*(chain.end()-1)});
+        recieveBlock(b,currentState);
+      }
     }
   });
 }
