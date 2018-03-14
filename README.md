@@ -5,7 +5,7 @@ yall are going DOWN bois
 
 ## TODO:
 ### WEDNESDAY
-- enumerate txns/blocks/txnios, make sending blocks work correctly
+- make sending blocks work correctly
 - make miners mine ~~again~~
 - wait times for simulated network latency
 - make txn args work correctly

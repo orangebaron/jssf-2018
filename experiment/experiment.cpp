@@ -1,7 +1,7 @@
-#ifndef GENERATE_TXNS_CPP
-#define GENERATE_TXNS_CPP
+#ifndef EXPERIMENT_CPP
+#define EXPERIMENT_CPP
 
-#include "generate_txns.hpp"
+#include "experiment.hpp"
 #include <algorithm>
 #include <chrono>
 #include <random>

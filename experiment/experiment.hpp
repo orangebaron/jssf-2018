@@ -1,5 +1,5 @@
-#ifndef GENERATE_TXNS_HPP
-#define GENERATE_TXNS_HPP
+#ifndef EXPERIMENT_HPP
+#define EXPERIMENT_HPP
 
 #include <string>
 using std::string;
