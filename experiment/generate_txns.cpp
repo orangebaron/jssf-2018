@@ -2,32 +2,11 @@
 #define GENERATE_TXNS_CPP
 
 #include "generate_txns.hpp"
-#include <sys/mman.h>
-#include <fcntl.h>
-#include <unistd.h>
 #include <algorithm>
 #include <chrono>
 #include <random>
 #include <climits>
 using namespace blockchain;
-
-FileWrapper::FileWrapper(string filename) {
-  file = open(filename.c_str(),O_RDWR);
-  endPtr = (char*)mmap(nullptr,1/*size*/,PROT_READ|PROT_WRITE,MAP_SHARED,file,0);
-}
-FileWrapper::~FileWrapper() {
-  close(file);
-}
-size_t FileWrapper::write(FileData data) {
-  FileData d { endPtr,data.len };
-  endPtr += data.len;
-  std::copy(data.data,data.data+data.len,d.data);
-  idDataMap.push_back(d);
-  return idDataMap.size()-1;
-}
-FileData FileWrapper::read(size_t id) {
-  return idDataMap.at(id);
-}
 
 TxnOtp* User::randomUnspentOutput(vector<const TxnOtp*>& dontUse) { return nullptr; } //TODO
 Pubkey User::randomPubkey() {
@@ -106,8 +85,8 @@ Txn User::randTxn(bool fake) {
   }
   return Txn(inps,otps,contractCreations,contractCalls,sigs);
 }
-User::User(ExtraChainData& e, FileWrapper& f, int txnsPerSecond, ChainType chainType, int fakesPerSecond):
-  f(f),e(e),chainType(chainType) {
+User::User(ExtraChainData& e, int txnsPerSecond, ChainType chainType, int fakesPerSecond):
+  e(e),chainType(chainType) {
   t = thread([](User* user,int txnsPerSecond,int fakesPerSecond) {
     std::chrono::milliseconds ms(1000/(txnsPerSecond+fakesPerSecond));
     for (int counter=0; !user->stop; counter=(counter+1)%(txnsPerSecond+fakesPerSecond)) {
@@ -121,8 +100,8 @@ User::~User() {
   t.join();
 }
 
-Miner::Miner(FileWrapper& f, ChainType chainType, MinerList& miners, bool fake):
-  f(f),chainType(chainType),miners(miners) {
+Miner::Miner(ChainType chainType, MinerList& miners, bool fake):
+  chainType(chainType),miners(miners) {
   t = thread([](Miner* miner,bool fake) {
     while (!miner->stop) {}
   },this,fake);

@@ -10,20 +10,6 @@ using std::thread;
 #include "../chain/txn.hpp"
 
 namespace blockchain {
-  struct FileData {
-    char *data;
-    size_t len;
-  };
-  class FileWrapper {
-    int file;
-    char *endPtr;
-    vector<FileData> idDataMap;
-  public:
-    FileWrapper(string filename);
-    ~FileWrapper();
-    size_t write(FileData);
-    FileData read(size_t id);
-  };
   enum GraphType { DAG,blocks };
   enum ApprovalType { allApprove,rwdPunishment };
   struct ChainType {
@@ -38,7 +24,6 @@ namespace blockchain {
   class User {
     thread t;
     bool stop;
-    FileWrapper& f;
     ExtraChainData& e;
     ChainType chainType;
     Txn randTxn(bool fake = false);
@@ -48,7 +33,7 @@ namespace blockchain {
     Pubkey randomContKey();
     vector<unsigned int> randIntVector(size_t minSize,size_t maxSize);
   public:
-    User(ExtraChainData&, FileWrapper&, int txnsPerSecond, ChainType, int fakesPerSecond = 0);
+    User(ExtraChainData&, int txnsPerSecond, ChainType, int fakesPerSecond = 0);
     ~User();
   };
   class Miner;
@@ -56,7 +41,6 @@ namespace blockchain {
   class Miner {
     thread t;
     bool stop;
-    FileWrapper& f;
     vector<Block> chain;
     vector<Block*> unapprovedBlocks;
     ChainType chainType;
@@ -66,7 +50,7 @@ namespace blockchain {
     ValidsChecked validsChecked;
     bool checkTxn(const Txn&);
   public:
-    Miner(FileWrapper&, ChainType, MinerList&, bool fake=false);
+    Miner(ChainType, MinerList&, bool fake=false);
     ~Miner();
     void recieveTxn(const Txn&);
     void recieveBlock(Block&);
