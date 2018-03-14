@@ -40,6 +40,10 @@ namespace blockchain {
   public:
     virtual WorkType getWork(WorkCalculated&) const = 0;
   };
+  struct HasID {
+    const long long id;
+    HasID();
+  };
   class Sig: public Hashable, public WorkRequired {
     Pubkey pubkey;
     // more data here
@@ -53,7 +57,7 @@ namespace blockchain {
   class Txn;
   typedef unsigned int TxnAmt;
   typedef unsigned int GasAmt;
-  class TxnOtp: public Hashable, public Validable, public WorkRequired {
+  class TxnOtp: public Hashable, public Validable, public WorkRequired, public HasID {
     Pubkey person;
     TxnAmt amt;
   public:
@@ -92,6 +96,7 @@ namespace blockchain {
     map<Pubkey,TxnAmt> contractMoney;
     map<Pubkey,map<unsigned int,const ContractCall*>> contractMaxIds;
     map<const Txn*,vector<RunOtp>> contractOtps;
+    map<long long,HasID&> IDs;
     ExtraChainData merge(ExtraChainData&); //throws exception if can't
   };
 }

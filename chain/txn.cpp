@@ -4,7 +4,7 @@ using namespace blockchain;
 #include "common_macros.hpp"
 
 Txn::Txn(vector<const TxnOtp*> inps,vector<TxnOtp> otps,vector<ContractCreation> contractCreations,vector<ContractCall> contractCalls,vector<Sig> sigs):
-  inps(inps),otps(otps),contractCreations(contractCreations),contractCalls(contractCalls),sigs(sigs) {}
+  HasID(), inps(inps),otps(otps),contractCreations(contractCreations),contractCalls(contractCalls),sigs(sigs) {}
 Hash Txn::getHashBeforeSig() const {
   return Hash();
 }
@@ -81,7 +81,7 @@ const vector<TxnOtp>& Txn::getOtps() const {
   return otps;
 }
 
-Block::Block(vector<Txn> txns,vector<Block*> approved): txns(txns),approved(approved) {}
+Block::Block(vector<Txn> txns,vector<Block*> approved): HasID(),txns(txns),approved(approved) {}
 Hash Block::getHash() const {
   return getHashBeforeSig();
 }

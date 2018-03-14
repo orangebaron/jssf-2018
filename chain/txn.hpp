@@ -4,7 +4,7 @@
 #include "code.hpp"
 
 namespace blockchain {
-  class Txn: public Hashable, public Validable, public Applyable, public WorkRequired {
+  class Txn: public Hashable, public Validable, public Applyable, public WorkRequired, public HasID {
     vector<const TxnOtp*> inps;
     vector<TxnOtp> otps;
     vector<ContractCreation> contractCreations;
@@ -20,7 +20,7 @@ namespace blockchain {
     virtual WorkType getWork(WorkCalculated&) const;
     const vector<TxnOtp>& getOtps() const;
   };
-  class Block: public Hashable, public Validable, public Applyable, public WorkRequired {
+  class Block: public Hashable, public Validable, public Applyable, public WorkRequired, public HasID {
     vector<Txn> txns;
     vector<Block*> approved;
     ExtraChainData extraDataAfterBlock;

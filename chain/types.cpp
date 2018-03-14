@@ -4,6 +4,7 @@
 #include "types.hpp"
 #include "code.hpp"
 #include <iostream>
+#include <cstdlib>
 
 using namespace blockchain;
 #include <map>
@@ -15,6 +16,13 @@ bool Pubkey::operator==(Pubkey p) const {
 bool Pubkey::operator<(Pubkey p) const {
   return x<p.x;
 }
+
+HasID::HasID(): id(
+  ((int)rand()<<(8*3)) |
+  ((int)rand()<<(8*2)) |
+  ((int)rand()<<(8*1)) |
+  (int)rand()
+) {}
 
 Sig::Sig(Pubkey pubkey): pubkey(pubkey) {}
 Pubkey Sig::getPerson() const {
@@ -28,7 +36,7 @@ bool Sig::getValid(const Hashable& h) const {
 }
 WorkType Sig::getWork(WorkCalculated&) const { return 2; }
 
-TxnOtp::TxnOtp(Pubkey person,TxnAmt amt,ValidsChecked* v): person(person), amt(amt) {
+TxnOtp::TxnOtp(Pubkey person,TxnAmt amt,ValidsChecked* v): HasID(), person(person), amt(amt) {
   if (v != nullptr) (*v)[this] = true;
 }
 Hash TxnOtp::getHash() const {
