@@ -9,7 +9,7 @@ yall are going DOWN bois
 - make users call random miners
 - have users rely on miners to give random things bc thats easier
 - have users not save chain
-- make miners mine ~again~
+- make miners mine ~~again~~
 ### THURSDAY
 - make testing system
 - more legit?
