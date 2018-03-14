@@ -18,7 +18,11 @@ namespace blockchain {
     virtual void apply(ExtraChainData&) const;
     virtual void unapply(ExtraChainData&) const;
     virtual WorkType getWork(WorkCalculated&) const;
+    const vector<const TxnOtp*>& getInps() const;
     const vector<TxnOtp>& getOtps() const;
+    const vector<ContractCreation>& getContractCreations() const;
+    const vector<ContractCall>& getContractCalls() const;
+    const vector<Sig>& getSigs() const;
   };
   class Block: public Hashable, public Validable, public Applyable, public WorkRequired, public HasID {
     vector<Txn> txns;

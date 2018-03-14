@@ -120,16 +120,35 @@ void Miner::recieveTxn(const Txn& t) {
       unapprovedBlocks[std::uniform_int_distribution<>(0,unapprovedBlocks.size())(gen)],
       &chain[std::uniform_int_distribution<>(0,chain.size())(gen)]
     });
-    recieveBlock(b);
+    recieveBlock(b,currentState);
   }
 }
-void Miner::recieveBlock(Block& b) {
+void Miner::recieveBlock(Block& b,const ExtraChainData& e) {
   if (!b.getValid(currentState,validsChecked)) return;
+  vector<Txn> txns(b.getTxns());
+  vector<Block*> approved(b.getApproved());
+  for (auto i = txns.begin(); i!=txns.end(); i++) {
+    auto& t = *i;
+    vector<const TxnOtp*> inps(t.getInps());
+    for (size_t j = 0;j<approved.size();j++)
+      inps[j] = (TxnOtp*)currentState.IDsReverse[e.IDs.at(inps[j])];
+    txns.emplace(i,Txn(
+      inps,
+      t.getOtps(),
+      t.getContractCreations(),
+      t.getContractCalls(),
+      t.getSigs()
+    ));
+  }
+  for (size_t i = 0;i<approved.size();i++)
+    approved[i] = (Block*)currentState.IDsReverse[e.IDs.at(approved[i])];
+
+  Block c(txns,approved);
   for (auto i=unapprovedBlocks.begin();i!=unapprovedBlocks.end();i++)
-    for (auto j: b.getApproved())
+    for (auto j: c.getApproved())
       if (*i==j) { unapprovedBlocks.erase(i); i--; }
   b.apply(currentState);
-  for (auto m: miners) m->recieveBlock(b); //PROBLEM: blocks have pointers etc to other blocks, which other miners will have different
+  for (auto m: miners) m->recieveBlock(c,currentState); //PROBLEM: blocks have pointers etc to other blocks, which other miners will have different
 }
 Pubkey Miner::randomContKey() {
   std::random_device r;

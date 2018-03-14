@@ -52,7 +52,7 @@ namespace blockchain {
     Miner(ChainType, MinerList&, bool fake=false);
     ~Miner();
     void recieveTxn(const Txn&);
-    void recieveBlock(Block&);
+    void recieveBlock(Block&,const ExtraChainData&);
     bool txnAcceptedYet(int id);
     Pubkey randomContKey();
   };

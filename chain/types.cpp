@@ -28,9 +28,11 @@ bool HasID::getValid(const ExtraChainData& e) const {
 }
 void HasID::apply(ExtraChainData& e) const {
   e.IDs.emplace(this,id);
+  e.IDsReverse.emplace(id,this);
 }
 void HasID::unapply(ExtraChainData& e) const {
   e.IDs.erase(this);
+  e.IDsReverse.erase(id);
 }
 
 Sig::Sig(Pubkey pubkey): pubkey(pubkey) {}

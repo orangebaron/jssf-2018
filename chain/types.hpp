@@ -100,6 +100,7 @@ namespace blockchain {
     map<Pubkey,map<unsigned int,const ContractCall*>> contractMaxIds;
     map<const Txn*,vector<RunOtp>> contractOtps;
     map<const HasID*,long long> IDs;
+    map<long long,const HasID*> IDsReverse;
     ExtraChainData merge(ExtraChainData&); //throws exception if can't
   };
 }
