@@ -43,6 +43,9 @@ namespace blockchain {
   struct HasID {
     const long long id;
     HasID();
+    bool getValid(const ExtraChainData&) const;
+    void apply(ExtraChainData&) const;
+    void unapply(ExtraChainData&) const;
   };
   class Sig: public Hashable, public WorkRequired {
     Pubkey pubkey;
@@ -96,7 +99,7 @@ namespace blockchain {
     map<Pubkey,TxnAmt> contractMoney;
     map<Pubkey,map<unsigned int,const ContractCall*>> contractMaxIds;
     map<const Txn*,vector<RunOtp>> contractOtps;
-    map<long long,HasID&> IDs;
+    map<long long,const HasID&> IDs;
     ExtraChainData merge(ExtraChainData&); //throws exception if can't
   };
 }

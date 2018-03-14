@@ -13,6 +13,7 @@ Hash Txn::getHash() const {
 }
 bool Txn::getValid(const ExtraChainData& e, ValidsChecked& v) const {
   validCheckBegin();
+  if (!((HasID*)this)->getValid(e)) return false;
   std::map<Pubkey,bool> sendersThatDidntSign;
   std::map<const TxnOtp*,bool> inputsUsed;
   TxnAmt sent = 0, recieved = 0;
@@ -47,6 +48,7 @@ bool Txn::getValid(const ExtraChainData& e, ValidsChecked& v) const {
   validCheckEnd();
 }
 void Txn::apply(ExtraChainData& e) const {
+  ((HasID*)this)->apply(e);
   for (auto i: inps) e.spentOutputs[i] = this;
   for (auto i: contractCreations) i.apply(e);
   for (auto i: contractCalls) {
@@ -60,6 +62,7 @@ void Txn::apply(ExtraChainData& e) const {
   }
 }
 void Txn::unapply(ExtraChainData& e) const {
+  ((HasID*)this)->unapply(e);
   for (auto i: inps) if (e.spentOutputs[i] == this) e.spentOutputs[i] = nullptr;
   for (auto i: contractCreations) i.unapply(e);
   for (auto i: contractCalls) e.contractMaxIds[i.getCalled()].erase(i.getId());
@@ -87,6 +90,7 @@ Hash Block::getHash() const {
 }
 bool Block::getValid(const ExtraChainData& e, ValidsChecked& v) const {
   validCheckBegin();
+  if (!((HasID*)this)->getValid(e)) return false;
   for (auto i: txns) if (!i.getValid(e,v)) return false;
   for (auto i: approved) if (!i->getValid(e,v)) return false;
   // check nonce
@@ -94,9 +98,11 @@ bool Block::getValid(const ExtraChainData& e, ValidsChecked& v) const {
 }
 void Block::apply(ExtraChainData& e) const {
   for (auto i: txns) i.apply(e);
+  ((HasID*)this)->apply(e);
 }
 void Block::unapply(ExtraChainData& e) const {
   for (auto i: txns) i.unapply(e);
+  ((HasID*)this)->unapply(e);
 }
 WorkType Block::getWork(WorkCalculated& w) const {
   getWorkBegin();

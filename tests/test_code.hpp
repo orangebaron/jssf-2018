@@ -6,7 +6,7 @@
 #include <iostream>
 using namespace blockchain;
 
-#define creat(g) ContractCall(Pubkey(),Pubkey(),vector<unsigned int>(),0,g)
+#define creat(g) ContractCall(Pubkey(),Pubkey(),vector<unsigned int>(),0,0,g)
 #define cmd(x) (unsigned int)Opcodes::x
 #define arr(...) { __VA_ARGS__ }
 #define singleSpendCodeTest(arr,gasLim,spent,gas,name) \

@@ -23,6 +23,15 @@ HasID::HasID(): id(
   ((int)rand()<<(8*1)) |
   (int)rand()
 ) {}
+bool HasID::getValid(const ExtraChainData& e) const {
+  return e.IDs.find(id)==e.IDs.end();
+}
+void HasID::apply(ExtraChainData& e) const {
+  e.IDs.emplace(id,*this);
+}
+void HasID::unapply(ExtraChainData& e) const {
+  e.IDs.erase(id);
+}
 
 Sig::Sig(Pubkey pubkey): pubkey(pubkey) {}
 Pubkey Sig::getPerson() const {
@@ -42,8 +51,9 @@ TxnOtp::TxnOtp(Pubkey person,TxnAmt amt,ValidsChecked* v): HasID(), person(perso
 Hash TxnOtp::getHash() const {
   return Hash();
 }
-bool TxnOtp::getValid(const ExtraChainData&, ValidsChecked& v) const {
+bool TxnOtp::getValid(const ExtraChainData& e, ValidsChecked& v) const {
   validCheckBegin();
+  if (!((HasID*)this)->getValid(e)) return false;
   validCheckEnd();
 }
 TxnAmt TxnOtp::getAmt() const {
@@ -66,9 +76,11 @@ unsigned int StorageChange::getValue() const { return value; }
 unsigned int StorageChange::getPrevValue() const { return prevValue; }
 void StorageChange::apply(ExtraChainData& e) const {
   e.storage[person][location] = value;
+  ((HasID*)this)->apply(e);
 }
 void StorageChange::unapply(ExtraChainData& e) const {
   e.storage[person][location] = prevValue;
+  ((HasID*)this)->unapply(e);
 }
 WorkType StorageChange::getWork(WorkCalculated&) const { return prevValue==0 ? 20 : 10; }
 
