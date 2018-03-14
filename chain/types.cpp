@@ -24,13 +24,13 @@ HasID::HasID(): id(
   (int)rand()
 ) {}
 bool HasID::getValid(const ExtraChainData& e) const {
-  return e.IDs.find(id)==e.IDs.end();
+  return e.IDs.find(this)==e.IDs.end();
 }
 void HasID::apply(ExtraChainData& e) const {
-  e.IDs.emplace(id,*this);
+  e.IDs.emplace(this,id);
 }
 void HasID::unapply(ExtraChainData& e) const {
-  e.IDs.erase(id);
+  e.IDs.erase(this);
 }
 
 Sig::Sig(Pubkey pubkey): pubkey(pubkey) {}
