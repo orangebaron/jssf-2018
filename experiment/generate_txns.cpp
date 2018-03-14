@@ -138,6 +138,13 @@ void Miner::recieveTxn(const Txn& t) {
     for (auto i: miners) if (i!=this) i->recieveTxn(t);
     t.apply(currentState);
   } else {
+    std::random_device r;
+    std::default_random_engine gen(r());
+    Block b({t},{
+      unapprovedBlocks[std::uniform_int_distribution<>(0,unapprovedBlocks.size())(gen)],
+      &chain[std::uniform_int_distribution<>(0,chain.size())(gen)]
+    });
+    recieveBlock(b);
   }
 }
 void Miner::recieveBlock(Block& b) {
