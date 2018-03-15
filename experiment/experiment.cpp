@@ -8,6 +8,8 @@
 #include <climits>
 using namespace blockchain;
 
+#define networkWait() std::this_thread::sleep_for(std::chrono::milliseconds(2));
+
 TxnOtp* User::randomUnspentOutput(vector<const TxnOtp*>& dontUse) { return nullptr; } //TODO
 Pubkey User::randomPubkey() {
   std::random_device r;
@@ -116,20 +118,23 @@ Miner::~Miner() {
   t.join();
 }
 void Miner::recieveTxn(const Txn& t) {
-  if (!t.getValid(currentState,validsChecked)) return;
-  if (chainType.graphType == blocks) {
-    currentBlock->push_back(t);
-    for (auto i: miners) if (i!=this) i->recieveTxn(t);
-    t.apply(currentState);
-  } else {
-    std::random_device r;
-    std::default_random_engine gen(r());
-    Block b({t},{
-      unapprovedBlocks[std::uniform_int_distribution<>(0,unapprovedBlocks.size())(gen)],
-      &chain[std::uniform_int_distribution<>(0,chain.size())(gen)]
-    });
-    recieveBlock(b,currentState);
-  }
+  thread([t,this]() {
+    networkWait();
+    if (!t.getValid(currentState,validsChecked)) return;
+    if (chainType.graphType == blocks) {
+      currentBlock->push_back(t);
+      for (auto i: miners) if (i!=this) i->recieveTxn(t);
+      t.apply(currentState);
+    } else {
+      std::random_device r;
+      std::default_random_engine gen(r());
+      Block b({t},{
+        unapprovedBlocks[std::uniform_int_distribution<>(0,unapprovedBlocks.size())(gen)],
+        &chain[std::uniform_int_distribution<>(0,chain.size())(gen)]
+      });
+      recieveBlock(b,currentState);
+    }
+  });
 }
 void Miner::recieveBlock(Block& b,const ExtraChainData& e) {
   if (!b.getValid(currentState,validsChecked)) return;
@@ -156,7 +161,11 @@ void Miner::recieveBlock(Block& b,const ExtraChainData& e) {
     for (auto j: c.getApproved())
       if (*i==j) { unapprovedBlocks.erase(i); i--; }
   b.apply(currentState);
-  for (auto m: miners) m->recieveBlock(c,currentState); //PROBLEM: blocks have pointers etc to other blocks, which other miners will have different
+  for (auto m: miners)
+    thread([m,this](Block& c) {
+      networkWait();
+      m->recieveBlock(c,currentState);
+    },c);
 }
 Pubkey Miner::randomContKey() {
   std::random_device r;
