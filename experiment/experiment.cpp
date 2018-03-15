@@ -91,6 +91,7 @@ Txn User::randTxn(Miner& m, bool fake) {
 }
 User::User(MinerList& miners, int txnsPerSecond, ChainType chainType, int fakesPerSecond):
   chainType(chainType), miners(miners) {
+  stop = false;
   t = thread([this,miners,txnsPerSecond,fakesPerSecond]() {
     std::chrono::milliseconds ms(1000/(txnsPerSecond+fakesPerSecond));
 
@@ -111,9 +112,10 @@ User::~User() {
 
 Miner::Miner(ChainType chainType, MinerList& miners, bool fake):
   chainType(chainType),miners(miners) {
+  stop = false;
   chain.push_back(Block());
   chain[0].apply(currentState);
-  t = thread([this,fake]() {
+  t.push_back(thread([this,fake]() {
     std::random_device r;
     std::default_random_engine gen(r());
     std::uniform_int_distribution<> minedNumGen(INT_MIN,INT_MAX);
@@ -124,31 +126,31 @@ Miner::Miner(ChainType chainType, MinerList& miners, bool fake):
       //}
       std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
-  });
+  }));
 }
 Miner::~Miner() {
   stop = true;
-  t.join();
+  for (auto i=t.begin();i!=t.end();i++) i->join();
 }
-void Miner::recieveTxn(const Txn& t) {
-  thread([t,this]() {
+void Miner::recieveTxn(const Txn& txn) {
+  t.push_back(thread([txn,this]() {
     networkWait();
     ValidsChecked v;
-    if (!t.getValid(currentState,v)) return;
+    if (!txn.getValid(currentState,v)) return;
     if (chainType.graphType == blocks) {
-      currentBlock.push_back(t);
-      for (auto i: miners) if (i!=this) i->recieveTxn(t);
-      t.apply(currentState);
+      currentBlock.push_back(txn);
+      for (auto i: miners) if (i!=this) i->recieveTxn(txn);
+      txn.apply(currentState);
     } else {
       std::random_device r;
       std::default_random_engine gen(r());
-      Block b({t},{
+      Block b({txn},{
         unapprovedBlocks[std::uniform_int_distribution<>(0,unapprovedBlocks.size())(gen)],
         &chain[std::uniform_int_distribution<>(0,chain.size())(gen)]
       });
       recieveBlock(b,currentState);
     }
-  });
+  }));
 }
 void Miner::recieveBlock(Block& b,const ExtraChainData& e) {
   ValidsChecked v;
