@@ -6,6 +6,7 @@ yall are going DOWN bois
 ## TODO:
 ### THURSDAY
 - make testing system
+- pun/rwd txns
 - fake txns and miners
 - make txn args work correctly
 - more legit?

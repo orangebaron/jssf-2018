@@ -29,8 +29,6 @@ namespace blockchain {
     ChainType chainType;
     MinerList& miners;
     Txn randTxn(Miner&,bool fake = false);
-    size_t numUnspentOutputs();
-    TxnOtp* randomUnspentOutput(vector<const TxnOtp*>& dontUse);
     Pubkey randomPubkey();
     vector<unsigned int> randIntVector(size_t minSize,size_t maxSize);
   public:
@@ -47,14 +45,17 @@ namespace blockchain {
     vector<Txn>* currentBlock; //TODO initialize and delete
     ExtraChainData currentState;
     ValidsChecked validsChecked;
+    vector<TxnOtp*> unspentOutputs;
     bool checkTxn(const Txn&);
   public:
     Miner(ChainType, MinerList&, bool fake=false);
     ~Miner();
     void recieveTxn(const Txn&);
     void recieveBlock(Block&,const ExtraChainData&);
-    bool txnAcceptedYet(int id);
+    bool txnAcceptedYet(long long id);
     Pubkey randomContKey();
+    size_t getNumUnspentOutputs();
+    TxnOtp* randomUnspentOutput(vector<const TxnOtp*>& dontUse);
   };
 }
 

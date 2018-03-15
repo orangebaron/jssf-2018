@@ -80,9 +80,11 @@ WorkType Txn::getWork(WorkCalculated& w) const {
   for (auto i: sigs) work += i.getWork(w);
   return work;
 }
-const vector<TxnOtp>& Txn::getOtps() const {
-  return otps;
-}
+const vector<const TxnOtp*>& Txn::getInps() const { return inps; }
+const vector<TxnOtp>& Txn::getOtps() const { return otps; }
+const vector<ContractCreation>& Txn::getContractCreations() const { return contractCreations; }
+const vector<ContractCall>& Txn::getContractCalls() const { return contractCalls; }
+const vector<Sig>& Txn::getSigs() const { return sigs; }
 
 Block::Block(vector<Txn> txns,vector<Block*> approved): HasID(),txns(txns),approved(approved) {}
 Hash Block::getHash() const {

@@ -77,12 +77,12 @@ unsigned int StorageChange::getLocation() const { return location; }
 unsigned int StorageChange::getValue() const { return value; }
 unsigned int StorageChange::getPrevValue() const { return prevValue; }
 void StorageChange::apply(ExtraChainData& e) const {
-  e.storage[person][location] = value;
   ((HasID*)this)->apply(e);
+  e.storage[person][location] = value;
 }
 void StorageChange::unapply(ExtraChainData& e) const {
-  e.storage[person][location] = prevValue;
   ((HasID*)this)->unapply(e);
+  e.storage[person][location] = prevValue;
 }
 WorkType StorageChange::getWork(WorkCalculated&) const { return prevValue==0 ? 20 : 10; }
 
@@ -93,7 +93,7 @@ ExtraChainData ExtraChainData::merge(ExtraChainData& e) { //CHECK ALL OF THIS
     map<Pubkey,CodeMemory>(contractCodes),
     map<Pubkey,TxnAmt>(contractMoney),
     map<Pubkey,map<unsigned int,const ContractCall*>>(),
-    map<const Txn*,vector<RunOtp>>(contractOtps)
+    map<const Txn*,vector<RunOtp>>(contractOtps),
   };
   for (auto i: contractMaxIds) a.contractMaxIds[i.first] = map<unsigned int,const ContractCall*>(i.second);
   for (auto i: e.spentOutputs) {

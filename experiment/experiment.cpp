@@ -8,13 +8,22 @@
 #include <climits>
 using namespace blockchain;
 
-#define networkWait() std::this_thread::sleep_for(std::chrono::milliseconds(2));
+#define networkWait() std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
-TxnOtp* User::randomUnspentOutput(vector<const TxnOtp*>& dontUse) { return nullptr; } //TODO
 Pubkey User::randomPubkey() {
   std::random_device r;
   std::default_random_engine gen(r());
   return Pubkey(std::uniform_int_distribution<>(INT_MIN,INT_MAX)(gen));
+}
+vector<unsigned int> User::randIntVector(size_t minSize,size_t maxSize) {
+  std::random_device r;
+  std::default_random_engine gen(r());
+  vector<unsigned int> v;
+  std::uniform_int_distribution<> randInt(INT_MIN,INT_MAX);
+  for (int i = std::uniform_int_distribution<>(minSize,maxSize)(gen);i>0;i--) {
+    v.push_back(randInt(gen));
+  }
+  return v;
 }
 Txn User::randTxn(Miner& m, bool fake) {
   std::random_device r;
@@ -37,8 +46,8 @@ Txn User::randTxn(Miner& m, bool fake) {
     Pubkey sig;
     switch ((txnType)randTxnType(gen)){
     case transfer:
-      if (numUnspentOutputs() > inps.size()) {
-        inps.push_back(randomUnspentOutput(inps)); //choose random input
+      if (m.getNumUnspentOutputs() > inps.size()) {
+        inps.push_back(m.randomUnspentOutput(inps)); //choose random input
         otps.push_back(TxnOtp(randomPubkey(),
           std::uniform_int_distribution<>(1, inps.back()->getAmt() )(gen) )); //output is random amount [1,input.amount]
         otps.push_back(TxnOtp(randomPubkey(),
@@ -58,8 +67,8 @@ Txn User::randTxn(Miner& m, bool fake) {
       ));
       break;
     case contCall:
-      if (numUnspentOutputs() > inps.size()) {
-        inps.push_back(randomUnspentOutput(inps)); //choose random input
+      if (m.getNumUnspentOutputs() > inps.size()) {
+        inps.push_back(m.randomUnspentOutput(inps)); //choose random input
         sig = inps.back()->getPerson();
         contractCalls.push_back(ContractCall(
           /*Caller:*/ sig,
@@ -106,10 +115,11 @@ Miner::Miner(ChainType chainType, MinerList& miners, bool fake):
     std::default_random_engine gen(r());
     std::uniform_int_distribution<> minedNumGen(INT_MIN,INT_MAX);
     while (!stop) {
-      if (minedNumGen(gen)%/*difficulty*/65 == 0) {
+      if (minedNumGen(gen)%1000 == 0) { //10 second block time
         Block b(*currentBlock,{&*(chain.end()-1)});
         recieveBlock(b,currentState);
       }
+      std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
   });
 }
@@ -161,11 +171,15 @@ void Miner::recieveBlock(Block& b,const ExtraChainData& e) {
     for (auto j: c.getApproved())
       if (*i==j) { unapprovedBlocks.erase(i); i--; }
   b.apply(currentState);
+  for (auto t: b.getTxns()) {
+    for (auto i: t.getInps()) for (auto j=unspentOutputs.begin();j!=unspentOutputs.end();j++) if (i==*j) unspentOutputs.erase(j);
+    for (auto i: t.getOtps()) unspentOutputs.push_back(&i);
+  }
   for (auto m: miners)
     thread([m,this](Block& c) {
       networkWait();
       m->recieveBlock(c,currentState);
-    },c);
+    },std::ref(c));
 }
 Pubkey Miner::randomContKey() {
   std::random_device r;
@@ -174,6 +188,27 @@ Pubkey Miner::randomContKey() {
     std::uniform_int_distribution<>(0,currentState.contractMoney.size())(gen))
     ->first
   );
+}
+bool Miner::txnAcceptedYet(long long id) {
+  try { currentState.IDsReverse.at(id); return true; } catch (...) { return false; }
+}
+size_t Miner::getNumUnspentOutputs() { return unspentOutputs.size(); }
+TxnOtp* Miner::randomUnspentOutput(vector<const TxnOtp*>& dontUse) {
+  std::random_device r;
+  std::default_random_engine gen(r());
+  if (dontUse.size()>unspentOutputs.size()/4) {
+    vector<TxnOtp*> canUse;
+    for (auto i: unspentOutputs) { bool use = true; for (auto j: dontUse) if (i==j) use = false; if (use) canUse.push_back(i); }
+    return canUse[std::uniform_int_distribution<>(0,canUse.size())(gen)];
+  } else {
+    std::uniform_int_distribution<> otpSelector(0,unspentOutputs.size());
+    for (;;) {
+      TxnOtp* x = unspentOutputs[otpSelector(gen)];
+      bool isIn = false;
+      for (auto i: dontUse) if (i==x) isIn = true;
+      if (!isIn) return x;
+    }
+  }
 }
 
 #endif
