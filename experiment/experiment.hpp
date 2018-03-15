@@ -7,6 +7,7 @@ using std::string;
 using std::vector;
 #include <thread>
 using std::thread;
+#include <atomic>
 #include "../chain/txn.hpp"
 
 namespace blockchain {
@@ -25,7 +26,7 @@ namespace blockchain {
   typedef vector<Miner*> MinerList;
   class User {
     thread t;
-    bool stop;
+    std::atomic_bool stop;
     ChainType chainType;
     MinerList& miners;
     Txn randTxn(Miner&,bool fake = false);
@@ -37,14 +38,13 @@ namespace blockchain {
   };
   class Miner {
     thread t;
-    bool stop;
+    std::atomic_bool stop;
     vector<Block> chain;
     vector<Block*> unapprovedBlocks;
     ChainType chainType;
     MinerList& miners;
-    vector<Txn>* currentBlock; //TODO initialize and delete
+    vector<Txn> currentBlock;
     ExtraChainData currentState;
-    ValidsChecked validsChecked;
     vector<TxnOtp*> unspentOutputs;
     bool checkTxn(const Txn&);
   public:

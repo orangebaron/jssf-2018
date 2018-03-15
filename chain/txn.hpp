@@ -30,6 +30,7 @@ namespace blockchain {
     ExtraChainData extraDataAfterBlock;
     //int nonce; TODO: are we gonna do legit hashes?
   public:
+    Block() {}
     Block(vector<Txn>,vector<Block*>);
     virtual Hash getHash() const;
     virtual bool getValid(const ExtraChainData&,ValidsChecked&) const;

@@ -6,6 +6,7 @@
 #include <chrono>
 #include <random>
 #include <climits>
+#include <iostream>
 using namespace blockchain;
 
 #define networkWait() std::this_thread::sleep_for(std::chrono::milliseconds(10));
@@ -110,15 +111,17 @@ User::~User() {
 
 Miner::Miner(ChainType chainType, MinerList& miners, bool fake):
   chainType(chainType),miners(miners) {
+  chain.push_back(Block());
+  chain[0].apply(currentState);
   t = thread([this,fake]() {
     std::random_device r;
     std::default_random_engine gen(r());
     std::uniform_int_distribution<> minedNumGen(INT_MIN,INT_MAX);
     while (!stop) {
-      if (minedNumGen(gen)%1000 == 0) { //10 second block time
-        Block b(*currentBlock,{&*(chain.end()-1)});
+      //if (minedNumGen(gen)%1000 == 0) { //10 second block time
+        Block b(currentBlock,{&*(chain.end()-1)});
         recieveBlock(b,currentState);
-      }
+      //}
       std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
   });
@@ -130,9 +133,10 @@ Miner::~Miner() {
 void Miner::recieveTxn(const Txn& t) {
   thread([t,this]() {
     networkWait();
-    if (!t.getValid(currentState,validsChecked)) return;
+    ValidsChecked v;
+    if (!t.getValid(currentState,v)) return;
     if (chainType.graphType == blocks) {
-      currentBlock->push_back(t);
+      currentBlock.push_back(t);
       for (auto i: miners) if (i!=this) i->recieveTxn(t);
       t.apply(currentState);
     } else {
@@ -147,7 +151,9 @@ void Miner::recieveTxn(const Txn& t) {
   });
 }
 void Miner::recieveBlock(Block& b,const ExtraChainData& e) {
-  if (!b.getValid(currentState,validsChecked)) return;
+  ValidsChecked v;
+  ExtraChainData ecd;
+  if (!b.getValid(currentState,v)) { return; }
   vector<Txn> txns(b.getTxns());
   vector<Block*> approved(b.getApproved());
   for (auto i = b.getTxns().begin(); i!=b.getTxns().end(); i++) {
@@ -163,7 +169,7 @@ void Miner::recieveBlock(Block& b,const ExtraChainData& e) {
       t.getSigs()
     ));
   }
-  for (size_t i = 0;i<approved.size();i++)
+  if (approved.size()>0) for (size_t i = 0;i<approved.size();i++)
     approved[i] = (Block*)currentState.IDsReverse[e.IDs.at(approved[i])];
 
   Block c(txns,approved);
@@ -184,13 +190,18 @@ void Miner::recieveBlock(Block& b,const ExtraChainData& e) {
 Pubkey Miner::randomContKey() {
   std::random_device r;
   std::default_random_engine gen(r());
-  return (std::next(currentState.contractMoney.begin(),
+  Pubkey p = std::next(currentState.contractMoney.begin(),
     std::uniform_int_distribution<>(0,currentState.contractMoney.size())(gen))
-    ->first
-  );
+    ->first;
+  return p;
 }
 bool Miner::txnAcceptedYet(long long id) {
-  try { currentState.IDsReverse.at(id); return true; } catch (...) { return false; }
+  try {
+    currentState.IDsReverse.at(id);
+    return true;
+  } catch (...) {
+    return false;
+  }
 }
 size_t Miner::getNumUnspentOutputs() { return unspentOutputs.size(); }
 TxnOtp* Miner::randomUnspentOutput(vector<const TxnOtp*>& dontUse) {
