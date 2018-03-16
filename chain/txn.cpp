@@ -14,27 +14,38 @@ Hash Txn::getHash() const {
 }
 bool Txn::getValid(const ExtraChainData& e, ValidsChecked& v) const {
   validCheckBegin();
-  if (!((HasID*)this)->getValid(e)) return false;
+  std::cout<<"Checking txn with id "<<id<<std::endl;
+  std::cout<<"Checking txn HasID validity..."<<std::endl;
+  if (!HasID::getValid(e)) return false;
   std::map<Pubkey,bool> sendersThatDidntSign;
   std::map<const TxnOtp*,bool> inputsUsed;
   TxnAmt sent = 0, recieved = 0;
+  std::cout<<"Checking txn inputs validity..."<<std::endl;
   for (auto i: inps) {
+    std::cout<<"A"<<std::endl;
     if (!i->getValid(e,v)) return false;
+      std::cout<<"B"<<std::endl;
     if (i < &*otps.end() && i >= &*otps.begin()) return false; // check if it's referring to one of the outputs of this txn
+      std::cout<<"C"<<std::endl;
     if (inputsUsed[i]) return false;
-    try { if (e.spentOutputs.at(i)) return false; } catch(...) {}
+      std::cout<<"D"<<std::endl;
+    try { if (e.spentOutputs.at(i)!=this) return false; } catch(...) {}
+      std::cout<<"E"<<std::endl;
     inputsUsed[i] = true;
     sent += i->getAmt();
     sendersThatDidntSign[i->getPerson()] = true;
   }
+  std::cout<<"Checking txn outputs validity..."<<std::endl;
   for (auto i: otps) {
     if (!i.getValid(e,v)) return false;
     recieved += i.getAmt();
   }
+  std::cout<<"Checking txn contract creations validity..."<<std::endl;
   for (auto i: contractCreations) {
     if (!i.getValid(e,v)) return false;
     sendersThatDidntSign[i.getKey()] = true;
   }
+  std::cout<<"Checking txn sigs validity..."<<std::endl;
   if (sent!=recieved) return false;
   for (auto i: sigs) {
     try {
@@ -45,11 +56,13 @@ bool Txn::getValid(const ExtraChainData& e, ValidsChecked& v) const {
     }
   }
   if (sendersThatDidntSign.size() > 0) return false;
+  std::cout<<"Returning txn is valid"<<std::endl;
   validCheckEnd();
 }
 void Txn::apply(ExtraChainData& e) const {
-  ((HasID*)this)->apply(e);
+  HasID::apply(e);
   for (auto i: inps) e.spentOutputs[i] = this;
+  for (auto i: otps) i.HasID::apply(e);
   for (auto i: contractCreations) i.apply(e);
   for (auto i: contractCalls) {
     e.contractMoney[i.getCalled()] += i.getAmt();
@@ -62,8 +75,9 @@ void Txn::apply(ExtraChainData& e) const {
   }
 }
 void Txn::unapply(ExtraChainData& e) const {
-  ((HasID*)this)->unapply(e);
+  HasID::unapply(e);
   for (auto i: inps) if (e.spentOutputs[i] == this) e.spentOutputs[i] = nullptr;
+  for (auto i: otps) i.HasID::unapply(e);
   for (auto i: contractCreations) i.unapply(e);
   for (auto i: contractCalls) e.contractMaxIds[i.getCalled()].erase(i.getId());
   for (auto i: e.contractOtps[this]) {
@@ -93,19 +107,23 @@ Hash Block::getHash() const {
 }
 bool Block::getValid(const ExtraChainData& e, ValidsChecked& v) const {
   validCheckBegin();
-  if (!((HasID*)this)->getValid(e)) return false;
+  std::cout<<"Checking block HasID validity..."<<std::endl;
+  if (!HasID::getValid(e)) return false;
+  std::cout<<"Checking block txns validity..."<<std::endl;
   for (auto i: txns) if (!i.getValid(e,v)) return false;
+  std::cout<<"Checking block approveds validity..."<<std::endl;
   for (auto i: approved) if (!i->getValid(e,v)) return false;
+  std::cout<<"Returning block is valid"<<std::endl;
   // check nonce
   validCheckEnd();
 }
 void Block::apply(ExtraChainData& e) const {
+  HasID::apply(e);
   for (auto i: txns) i.apply(e);
-  ((HasID*)this)->apply(e);
 }
 void Block::unapply(ExtraChainData& e) const {
+  HasID::unapply(e);
   for (auto i: txns) i.unapply(e);
-  ((HasID*)this)->unapply(e);
 }
 WorkType Block::getWork(WorkCalculated& w) const {
   getWorkBegin();

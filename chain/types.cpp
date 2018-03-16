@@ -24,7 +24,11 @@ HasID::HasID(): id(
   (int)rand()
 ) {}
 bool HasID::getValid(const ExtraChainData& e) const {
-  return e.IDs.find(this)==e.IDs.end();
+  try {
+    return e.IDs.at(this)==id;
+  } catch (...) {
+    return true;
+  }
 }
 void HasID::apply(ExtraChainData& e) const {
   e.IDs.emplace(this,id);
@@ -55,7 +59,7 @@ Hash TxnOtp::getHash() const {
 }
 bool TxnOtp::getValid(const ExtraChainData& e, ValidsChecked& v) const {
   validCheckBegin();
-  if (!((HasID*)this)->getValid(e)) return false;
+  if (!HasID::getValid(e)) return false;
   validCheckEnd();
 }
 TxnAmt TxnOtp::getAmt() const {
@@ -77,11 +81,9 @@ unsigned int StorageChange::getLocation() const { return location; }
 unsigned int StorageChange::getValue() const { return value; }
 unsigned int StorageChange::getPrevValue() const { return prevValue; }
 void StorageChange::apply(ExtraChainData& e) const {
-  ((HasID*)this)->apply(e);
   e.storage[person][location] = value;
 }
 void StorageChange::unapply(ExtraChainData& e) const {
-  ((HasID*)this)->unapply(e);
   e.storage[person][location] = prevValue;
 }
 WorkType StorageChange::getWork(WorkCalculated&) const { return prevValue==0 ? 20 : 10; }

@@ -41,7 +41,7 @@ namespace blockchain {
     virtual WorkType getWork(WorkCalculated&) const = 0;
   };
   struct HasID {
-    const long long id;
+    long long id;
     HasID();
     bool getValid(const ExtraChainData&) const;
     void apply(ExtraChainData&) const;

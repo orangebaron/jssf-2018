@@ -9,7 +9,7 @@
 #include <iostream>
 using namespace blockchain;
 
-#define networkWait() std::this_thread::sleep_for(std::chrono::milliseconds(10));
+#define networkWait() //std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
 Pubkey User::randomPubkey() {
   std::random_device r;
@@ -109,6 +109,7 @@ User::User(MinerList& miners, int txnsPerSecond, ChainType chainType, int fakesP
         std::this_thread::sleep_for(std::chrono::seconds(10));
         int numAccepted = 0;
         for (auto m: miners) if (m->txnAcceptedYet(id)) numAccepted++;
+        std::cout<<numAccepted<<std::endl;
       }));
 
       std::this_thread::sleep_for(ms);
@@ -124,6 +125,9 @@ Miner::Miner(ChainType chainType, MinerList& miners, size_t listLoc, bool fake):
   chainType(chainType),miners(miners) {
   stop = false;
   TxnOtp* otp = new TxnOtp(Pubkey(),10000,&v);
+  currentState.IDs[otp] = otp->id;
+  currentState.IDsReverse[otp->id] = otp;
+  otp->id=0;
   chain.push_back(Block({Txn(
     {otp},
     {TxnOtp(Pubkey(1),10000,&v)},
@@ -131,8 +135,12 @@ Miner::Miner(ChainType chainType, MinerList& miners, size_t listLoc, bool fake):
     {},
     {Sig(Pubkey())}
   )},{}));
+  chain[0].id=1;
+  ((vector<Txn>&)chain[0].getTxns())[0].id=2;
+  ((vector<TxnOtp>&)chain[0].getTxns()[0].getOtps())[0].id=3;
   unspentOutputs.push_back((TxnOtp*)&chain[0].getTxns()[0].getOtps()[0]);
   chain[0].apply(currentState);
+  v[&chain[0]] = true;
   threads.push_back(thread([this,fake,listLoc]() {
     std::random_device r;
     std::default_random_engine gen(r());
@@ -155,8 +163,13 @@ void Miner::recieveTxn(const Txn& txn0,const ExtraChainData& e,size_t listLoc,si
     if ((listLoc+1)%miners.size()==startLoc) return;
   }
   vector<const TxnOtp*> inps(txn0.getInps());
-  for (size_t j = 0;j<inps.size();j++)
-    inps[j] = (TxnOtp*)currentState.IDsReverse[e.IDs.at(inps[j])];
+  try {
+    for (size_t j = 0;j<inps.size();j++)
+      inps[j] = (TxnOtp*)currentState.IDsReverse[e.IDs.at(inps[j])];
+  } catch (...) {
+    std::cout<<".at failure line "<<__LINE__<<std::endl;
+    return;
+  }
   Txn& txn = *new Txn(
     inps,
     txn0.getOtps(),
@@ -199,8 +212,13 @@ void Miner::recieveBlock(Block& b,const ExtraChainData& e,size_t listLoc,size_t 
   for (auto i = b.getTxns().begin(); i<b.getTxns().end(); i++) {
     auto& t = *i;
     vector<const TxnOtp*> inps(t.getInps());
-    for (size_t j = 0;j<inps.size();j++)
-      inps[j] = (TxnOtp*)currentState.IDsReverse[e.IDs.at(inps[j])];
+    try {
+      for (size_t j = 0;j<inps.size();j++)
+        inps[j] = (TxnOtp*)currentState.IDsReverse[e.IDs.at(inps[j])];
+    } catch (...) {
+      std::cout<<".at failure line "<<__LINE__<<std::endl;
+      return;
+    }
     txns.push_back(Txn(
       inps,
       t.getOtps(),
@@ -210,7 +228,12 @@ void Miner::recieveBlock(Block& b,const ExtraChainData& e,size_t listLoc,size_t 
     ));
   }
   if (approved.size()>0) for (size_t i = 0;i<approved.size();i++)
-    approved[i] = (Block*)currentState.IDsReverse[e.IDs.at(approved[i])];
+    try {
+      approved[i] = (Block*)currentState.IDsReverse[e.IDs.at(approved[i])];
+    } catch (...) {
+      std::cout<<".at failure line "<<__LINE__<<std::endl;
+      return;
+    }
 
   Block c(txns,approved);
   recieveBlock(c,listLoc,startLoc);
@@ -221,7 +244,10 @@ void Miner::recieveBlock(Block& c,size_t listLoc,size_t startLoc) {
     listLoc %= miners.size();
     if (listLoc==startLoc) return;
   }
+  std::cout<<"--------------------------"<<std::endl;
+  std::cout<<"Checking block..."<<std::endl;
   if (!c.getValid(currentState,v)) return;
+  std::cout<<"Block accepted"<<std::endl;
   for (auto i=unapprovedBlocks.begin();i<unapprovedBlocks.end();i++)
     for (auto j: c.getApproved())
       if (*i==j) { unapprovedBlocks.erase(i); i--; }

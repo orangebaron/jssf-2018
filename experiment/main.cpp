@@ -6,7 +6,7 @@
 
 int main() {
   std::cout<<"m"<<std::endl;
-  const int numMiners = 2;
+  const int numMiners = 60;
   MinerList m;
   for (int i=0;i<numMiners;i++) m.push_back(new Miner(Expt1,m,i));
   User u(m,1,Expt1);
