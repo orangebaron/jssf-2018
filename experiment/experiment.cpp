@@ -165,7 +165,7 @@ void Miner::recieveTxn(const Txn& txn0,const ExtraChainData& e,size_t listLoc,si
   vector<const TxnOtp*> inps(txn0.getInps());
   try {
     for (size_t j = 0;j<inps.size();j++)
-      inps[j] = (TxnOtp*)currentState.IDsReverse[e.IDs.at(inps[j])];
+      inps[j] = (TxnOtp*)currentState.IDsReverse[e.IDs.at(inps[j]->HasID::getHasIDptr())];
   } catch (...) {
     std::cout<<".at failure line "<<__LINE__<<std::endl;
     return;
@@ -214,7 +214,7 @@ void Miner::recieveBlock(Block& b,const ExtraChainData& e,size_t listLoc,size_t 
     vector<const TxnOtp*> inps(t.getInps());
     try {
       for (size_t j = 0;j<inps.size();j++)
-        inps[j] = (TxnOtp*)currentState.IDsReverse[e.IDs.at(inps[j])];
+        inps[j] = (TxnOtp*)currentState.IDsReverse[e.IDs.at(inps[j]->HasID::getHasIDptr())];
     } catch (...) {
       std::cout<<".at failure line "<<__LINE__<<std::endl;
       return;
@@ -229,7 +229,7 @@ void Miner::recieveBlock(Block& b,const ExtraChainData& e,size_t listLoc,size_t 
   }
   if (approved.size()>0) for (size_t i = 0;i<approved.size();i++)
     try {
-      approved[i] = (Block*)currentState.IDsReverse[e.IDs.at(approved[i])];
+      approved[i] = (Block*)currentState.IDsReverse[e.IDs.at(approved[i]->HasID::getHasIDptr())];
     } catch (...) {
       std::cout<<".at failure line "<<__LINE__<<std::endl;
       return;

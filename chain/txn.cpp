@@ -118,6 +118,7 @@ bool Block::getValid(const ExtraChainData& e, ValidsChecked& v) const {
   validCheckEnd();
 }
 void Block::apply(ExtraChainData& e) const {
+  std::cout<<"p"<<this<<std::endl;
   HasID::apply(e);
   for (auto i: txns) i.apply(e);
 }

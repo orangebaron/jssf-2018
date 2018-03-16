@@ -31,6 +31,7 @@ bool HasID::getValid(const ExtraChainData& e) const {
   }
 }
 void HasID::apply(ExtraChainData& e) const {
+  std::cout<<"p2"<<this<<std::endl;
   e.IDs.emplace(this,id);
   e.IDsReverse.emplace(id,this);
 }
@@ -38,6 +39,7 @@ void HasID::unapply(ExtraChainData& e) const {
   e.IDs.erase(this);
   e.IDsReverse.erase(id);
 }
+const HasID* HasID::getHasIDptr() const {return this;}
 
 Sig::Sig(Pubkey pubkey): pubkey(pubkey) {}
 Pubkey Sig::getPerson() const {

@@ -46,6 +46,7 @@ namespace blockchain {
     bool getValid(const ExtraChainData&) const;
     void apply(ExtraChainData&) const;
     void unapply(ExtraChainData&) const;
+    const HasID* getHasIDptr() const;
   };
   class Sig: public Hashable, public WorkRequired {
     Pubkey pubkey;
