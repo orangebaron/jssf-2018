@@ -29,6 +29,7 @@ namespace blockchain {
     std::atomic_bool stop;
     ChainType chainType;
     MinerList& miners;
+    vector<long long> ids;
     Txn randTxn(Miner&,bool fake = false);
     Pubkey randomPubkey();
     vector<unsigned int> randIntVector(size_t minSize,size_t maxSize);
@@ -50,7 +51,8 @@ namespace blockchain {
   public:
     Miner(ChainType, MinerList&, bool fake=false);
     ~Miner();
-    void recieveTxn(const Txn&);
+    void recieveTxn(const Txn&,size_t listLoc,size_t startLoc);
+    void recieveTxn(const Txn&,const ExtraChainData&,size_t listLoc,size_t startLoc);
     void recieveBlock(Block&,const ExtraChainData&);
     bool txnAcceptedYet(long long id);
     Pubkey randomContKey();
