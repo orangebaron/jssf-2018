@@ -4,12 +4,10 @@ yall are going DOWN bois
 
 
 ## TODO:
-### THURSDAY
+### FRIDAY
 - make testing system
 - pun/rwd txns
 - fake txns and miners
 - make txn args work correctly
 - more legit?
-### FRIDAY
-- grace period (whoops that was supposed to be wednesday and thursday initially)
 - trifold
