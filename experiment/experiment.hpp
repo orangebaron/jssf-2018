@@ -25,11 +25,13 @@ namespace blockchain {
   class Miner;
   typedef vector<Miner*> MinerList;
   class User {
-    thread t;
+    vector<thread> threads;
     std::atomic_bool stop;
     ChainType chainType;
     MinerList& miners;
     vector<long long> ids;
+    vector<std::chrono::time_point<std::chrono::system_clock>> blockTimes; //TODO: was planning on getting this done hours ago but whoops
+    ValidsChecked v;
     Txn randTxn(Miner&,bool fake = false);
     Pubkey randomPubkey();
     vector<unsigned int> randIntVector(size_t minSize,size_t maxSize);
@@ -38,7 +40,7 @@ namespace blockchain {
     ~User();
   };
   class Miner {
-    vector<thread*> threads;
+    vector<thread> threads;
     std::atomic_bool stop;
     vector<Block> chain;
     vector<Block*> unapprovedBlocks;
@@ -47,13 +49,15 @@ namespace blockchain {
     vector<Txn> currentBlock;
     ExtraChainData currentState;
     vector<TxnOtp*> unspentOutputs;
+    ValidsChecked v;
     bool checkTxn(const Txn&);
   public:
-    Miner(ChainType, MinerList&, bool fake=false);
+    Miner(ChainType, MinerList&, size_t listLoc, bool fake=false);
     ~Miner();
     void recieveTxn(const Txn&,size_t listLoc,size_t startLoc);
     void recieveTxn(const Txn&,const ExtraChainData&,size_t listLoc,size_t startLoc);
-    void recieveBlock(Block&,const ExtraChainData&);
+    void recieveBlock(Block&,size_t listLoc,size_t startLoc);
+    void recieveBlock(Block&,const ExtraChainData&,size_t listLoc,size_t startLoc);
     bool txnAcceptedYet(long long id);
     Pubkey randomContKey();
     size_t getNumUnspentOutputs();

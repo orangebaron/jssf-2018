@@ -2,6 +2,7 @@
 
 using namespace blockchain;
 #include "common_macros.hpp"
+#include <iostream>
 
 Txn::Txn(vector<const TxnOtp*> inps,vector<TxnOtp> otps,vector<ContractCreation> contractCreations,vector<ContractCall> contractCalls,vector<Sig> sigs):
   HasID(), inps(inps),otps(otps),contractCreations(contractCreations),contractCalls(contractCalls),sigs(sigs) {}
@@ -36,7 +37,6 @@ bool Txn::getValid(const ExtraChainData& e, ValidsChecked& v) const {
   }
   if (sent!=recieved) return false;
   for (auto i: sigs) {
-    if (!i.getValid(*this)) return false;
     try {
       sendersThatDidntSign.at(i.getPerson());
       sendersThatDidntSign.erase(i.getPerson());
@@ -86,6 +86,7 @@ const vector<ContractCreation>& Txn::getContractCreations() const { return contr
 const vector<ContractCall>& Txn::getContractCalls() const { return contractCalls; }
 const vector<Sig>& Txn::getSigs() const { return sigs; }
 
+Block::Block(): HasID() {}
 Block::Block(vector<Txn> txns,vector<Block*> approved): HasID(),txns(txns),approved(approved) {}
 Hash Block::getHash() const {
   return getHashBeforeSig();
