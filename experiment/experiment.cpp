@@ -116,7 +116,7 @@ Miner::Miner(ChainType chainType, MinerList& miners, bool fake):
   stop = false;
   chain.push_back(Block());
   chain[0].apply(currentState);
-  t.push_back(thread([this,fake]() {
+  threads.push_back(new thread([this,fake]() {
     std::random_device r;
     std::default_random_engine gen(r());
     std::uniform_int_distribution<> minedNumGen(INT_MIN,INT_MAX);
@@ -131,7 +131,7 @@ Miner::Miner(ChainType chainType, MinerList& miners, bool fake):
 }
 Miner::~Miner() {
   stop = true;
-  for (auto i=t.begin();i!=t.end();i++) i->join();
+  for (auto i=threads.begin();i!=threads.end();i++) if ((*i)->joinable()) (*i)->join();
 }
 void Miner::recieveTxn(const Txn& txn0,const ExtraChainData& e,size_t listLoc,size_t startLoc) {
   if ((listLoc+1)%miners.size()==startLoc) return;
@@ -151,7 +151,7 @@ void Miner::recieveTxn(const Txn& txn,size_t listLoc,size_t startLoc) {
   listLoc++;
   listLoc %= miners.size();
   if (listLoc==startLoc) return;
-  t.push_back(thread([txn,listLoc,startLoc,this]() {
+  threads.push_back(new thread([txn,listLoc,startLoc,this]() {
     networkWait();
     ValidsChecked v;
     if (!txn.getValid(currentState,v)) return;

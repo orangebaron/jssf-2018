@@ -38,7 +38,7 @@ namespace blockchain {
     ~User();
   };
   class Miner {
-    vector<thread> t;
+    vector<thread*> threads;
     std::atomic_bool stop;
     vector<Block> chain;
     vector<Block*> unapprovedBlocks;
