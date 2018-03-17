@@ -105,7 +105,7 @@ User::User(MinerList& miners, int txnsPerSecond, ChainType chainType, int fakesP
     for (int counter=0; !stop; counter=(counter+1)%(txnsPerSecond+fakesPerSecond)) {
       size_t loc = minerNumGen(gen);
       Miner& m = *miners[loc];
-      Txn t = randTxn(m,counter<txnsPerSecond);
+      Txn t = randTxn(m,counter>=txnsPerSecond);
       auto id=t.id;
 
       threads.push_back(thread([miners,id,this]() {
@@ -113,8 +113,8 @@ User::User(MinerList& miners, int txnsPerSecond, ChainType chainType, int fakesP
         std::chrono::time_point<std::chrono::system_clock> x = std::chrono::system_clock::now();
         for (unsigned int numAccepted = 0;numAccepted<miners.size();){
           numAccepted=0;
-          //if (stop) return;
-          std::this_thread::sleep_for(std::chrono::microseconds(10));
+          if (stop) return;
+          std::this_thread::sleep_for(std::chrono::microseconds(100));
           for (auto m: miners) if (m->txnAcceptedYet(id)) numAccepted++;
         }
         auto y = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now()-x).count();
@@ -199,13 +199,20 @@ void Miner::recieveTxn(const Txn& txn) {
   /*threads.push_back(*///thread([txn,this]() {
     thread* t = &threads[threads.size()-1];
     networkWait();
-    /*if (txn.isFake()) return;
-    std::this_thread::sleep_for(std::chrono::milliseconds(txn.getOtps().size()*2));
-    std::this_thread::sleep_for(std::chrono::milliseconds(txn.getContractCreations().size()*5));
+    if (txn.isFake()) return;
+    for (int i=0;i<(chainType.graphType == DAG?3:1);i++) {
+      std::this_thread::sleep_for(std::chrono::milliseconds(txn.getOtps().size()*1));
+      std::this_thread::sleep_for(std::chrono::milliseconds(txn.getContractCreations().size()*2));
+      if (chainType.approvalType==allApprove)
+        std::this_thread::sleep_for(std::chrono::milliseconds(txn.numContractCalls*5));
+      std::this_thread::sleep_for(std::chrono::milliseconds(txn.getPunRwdTxns().size()*2));
+    }
+    totFees+=txn.getOtps().size()*1;
+    totFees+=txn.getContractCreations().size()*2;
     if (chainType.approvalType==allApprove)
-      std::this_thread::sleep_for(std::chrono::milliseconds(txn.getContractCalls().size()*10));
-    std::this_thread::sleep_for(std::chrono::milliseconds(txn.getPunRwdTxns().size()*2));
-    *///if (!txn.getValid(currentState,v)) return;
+      totFees+=txn.numContractCalls*5;
+    totFees+=txn.getPunRwdTxns().size()*3;
+    //if (!txn.getValid(currentState,v)) return;
     //std::cout<<"miner accepted txn "<<txn.id<<std::endl;
     if (chainType.graphType == blocks) {
       currentBlock.push_back(txn);

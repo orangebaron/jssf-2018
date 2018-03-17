@@ -53,6 +53,7 @@ namespace blockchain {
     ValidsChecked v;
     bool checkTxn(const Txn&);
   public:
+    int totFees=0;
     vector<thread*> deletableThreads;
     ExtraChainData currentState;
     Miner(ChainType, MinerList&, bool fake=false);
