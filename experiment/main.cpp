@@ -6,9 +6,9 @@
 
 void test(ChainType c,int fakes=0) {
   MinerList m;
-  for (int i=0;i<1;i++) m.push_back(new Miner(Expt2,m,i));
+  for (int i=0;i<10;i++) m.push_back(new Miner(Expt2,m,i));
   std::this_thread::sleep_for(std::chrono::seconds(1));
-  User u(m,1,c,fakes);
+  User u(m,10,c,fakes);
   std::this_thread::sleep_for(std::chrono::seconds(10));
   u.stop=true;
   int totFees = 0;
@@ -21,7 +21,7 @@ void test(ChainType c,int fakes=0) {
 #define testThing(x) \
 test(Expt##x ); \
 std::cout<<'\t'; \
-test(Expt##x ,1); \
+test(Expt##x ,10); \
 std::cout<<std::endl;
 int main() {
   for (int i=0;i<12;i++) {
