@@ -23,23 +23,19 @@ HasID::HasID(): id(
   ((int)rand()<<(8*1)) |
   (int)rand()
 ) {}
-bool HasID::getValid(const ExtraChainData& e) const {
+bool HasID::getValid(const void* ptr,const ExtraChainData& e) const {
   try {
-    return e.IDs.at(this)==id;
+    return e.IDs.at(id)==ptr;
   } catch (...) {
     return true;
   }
 }
-void HasID::apply(ExtraChainData& e) const {
-  std::cout<<"p2"<<this<<std::endl;
-  e.IDs.emplace(this,id);
-  e.IDsReverse.emplace(id,this);
+void HasID::apply(const void* ptr,ExtraChainData& e) const {
+  e.IDs.emplace(id,ptr);
 }
-void HasID::unapply(ExtraChainData& e) const {
-  e.IDs.erase(this);
-  e.IDsReverse.erase(id);
+void HasID::unapply(const void* ptr,ExtraChainData& e) const {
+  e.IDs.erase(id);
 }
-const HasID* HasID::getHasIDptr() const {return this;}
 
 Sig::Sig(Pubkey pubkey): pubkey(pubkey) {}
 Pubkey Sig::getPerson() const {
@@ -54,6 +50,7 @@ bool Sig::getValid(const Hashable& h) const {
 WorkType Sig::getWork(WorkCalculated&) const { return 2; }
 
 TxnOtp::TxnOtp(Pubkey person,TxnAmt amt,ValidsChecked* v): HasID(), person(person), amt(amt) {
+  std::cout<<"Init txnotp"<<std::endl;
   if (v != nullptr) (*v)[this] = true;
 }
 Hash TxnOtp::getHash() const {
@@ -61,7 +58,7 @@ Hash TxnOtp::getHash() const {
 }
 bool TxnOtp::getValid(const ExtraChainData& e, ValidsChecked& v) const {
   validCheckBegin();
-  if (!HasID::getValid(e)) return false;
+  if (!HasID::getValid(this,e)) return false;
   validCheckEnd();
 }
 TxnAmt TxnOtp::getAmt() const {

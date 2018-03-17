@@ -93,7 +93,7 @@ User::User(MinerList& miners, int txnsPerSecond, ChainType chainType, int fakesP
   chainType(chainType), miners(miners) {
   stop = false;
   threads.push_back(thread([this,miners,txnsPerSecond,fakesPerSecond]() {
-    std::chrono::milliseconds ms(1000/(txnsPerSecond+fakesPerSecond));
+    std::chrono::milliseconds ms(10000/(txnsPerSecond+fakesPerSecond));
 
     std::random_device r;
     std::default_random_engine gen(r());
@@ -102,14 +102,16 @@ User::User(MinerList& miners, int txnsPerSecond, ChainType chainType, int fakesP
       size_t loc = minerNumGen(gen);
       Miner& m = *miners[loc];
       Txn t = randTxn(m,counter<txnsPerSecond);
-      m.recieveTxn(t,loc,loc); // do things with it
+      m.recieveTxn(t);
+      for (auto miner:miners) if (miner!=&m) m.sendTxn(t,*miner); // do things with it
       auto id=t.id;
 
       threads.push_back(thread([miners,id]() {
-        std::this_thread::sleep_for(std::chrono::seconds(10));
+        std::cout<<"waiting 20 for "<<id<<std::endl;
+        std::this_thread::sleep_for(std::chrono::seconds(20));
         int numAccepted = 0;
         for (auto m: miners) if (m->txnAcceptedYet(id)) numAccepted++;
-        std::cout<<numAccepted<<std::endl;
+        std::cout<<"#accepted for "<<id<<":"<<numAccepted<<std::endl;
       }));
 
       std::this_thread::sleep_for(ms);
@@ -121,12 +123,11 @@ User::~User() {
   for (auto i=threads.begin();i<threads.end();i++) if (i->joinable()) i->join();
 }
 
-Miner::Miner(ChainType chainType, MinerList& miners, size_t listLoc, bool fake):
+Miner::Miner(ChainType chainType, MinerList& miners, bool fake):
   chainType(chainType),miners(miners) {
   stop = false;
   TxnOtp* otp = new TxnOtp(Pubkey(),10000,&v);
-  currentState.IDs[otp] = otp->id;
-  currentState.IDsReverse[otp->id] = otp;
+  currentState.IDs[otp->id] = otp;
   otp->id=0;
   chain.push_back(Block({Txn(
     {otp},
@@ -141,35 +142,30 @@ Miner::Miner(ChainType chainType, MinerList& miners, size_t listLoc, bool fake):
   unspentOutputs.push_back((TxnOtp*)&chain[0].getTxns()[0].getOtps()[0]);
   chain[0].apply(currentState);
   v[&chain[0]] = true;
-  threads.push_back(thread([this,fake,listLoc]() {
+  threads.push_back(thread([this,miners,fake]() {
+    thread* t = &threads[threads.size()-1];
     std::random_device r;
     std::default_random_engine gen(r());
     std::uniform_int_distribution<> minedNumGen(INT_MIN,INT_MAX);
     while (!stop) {
-      if (minedNumGen(gen)%(200) == 0) { //10 second block time w/ 60 miners
+      if (minedNumGen(gen)%(1000) == 0) { //10 second block time
         Block b(currentBlock,{&*(chain.end()-1)});
-        recieveBlock(b,listLoc,listLoc);
+        recieveBlock(b);
+        for (auto m: miners) if (m!=this) sendBlock(b,*m);
       }
-      std::this_thread::sleep_for(std::chrono::milliseconds(10));
+      std::this_thread::sleep_for(std::chrono::milliseconds(10*miners.size()));
     }
+    deletableThreads.push_back(t);
   }));
 }
 Miner::~Miner() {
   stop = true;
   for (auto i=threads.begin();i<threads.end();i++) if (i->joinable()) i->join();
 }
-void Miner::recieveTxn(const Txn& txn0,const ExtraChainData& e,size_t listLoc,size_t startLoc) {
-  if (miners.size()>1) {
-    if ((listLoc+1)%miners.size()==startLoc) return;
-  }
+void Miner::sendTxn(const Txn& txn0,Miner& miner) {
   vector<const TxnOtp*> inps(txn0.getInps());
-  try {
-    for (size_t j = 0;j<inps.size();j++)
-      inps[j] = (TxnOtp*)currentState.IDsReverse[e.IDs.at(inps[j]->HasID::getHasIDptr())];
-  } catch (...) {
-    std::cout<<".at failure line "<<__LINE__<<std::endl;
-    return;
-  }
+  for (size_t j = 0;j<inps.size();j++)
+    inps[j] = (TxnOtp*)miner.currentState.IDs[inps[j]->id];
   Txn& txn = *new Txn(
     inps,
     txn0.getOtps(),
@@ -177,21 +173,19 @@ void Miner::recieveTxn(const Txn& txn0,const ExtraChainData& e,size_t listLoc,si
     txn0.getContractCalls(),
     txn0.getSigs()
   );
-  recieveTxn(txn,listLoc,startLoc);
+  txn.id = txn0.id;
+  std::cout<<"about to send txn "<<txn.id<<std::endl;
+  miner.recieveTxn(txn0);
 }
-void Miner::recieveTxn(const Txn& txn,size_t listLoc,size_t startLoc) {
-  if (miners.size()>1) {
-    listLoc++;
-    listLoc %= miners.size();
-    if (listLoc==startLoc) return;
-  }
-  threads.push_back(thread([txn,listLoc,startLoc,this]() {
+void Miner::recieveTxn(const Txn& txn) {
+  //threads.push_back(thread([txn,this]() {
+    //thread* t = &threads[threads.size()-1];
     networkWait();
+    std::cout<<"miner recieved txn "<<txn.id<<std::endl;
     if (!txn.getValid(currentState,v)) return;
+    std::cout<<"miner accepted txn "<<txn.id<<std::endl;
     if (chainType.graphType == blocks) {
       currentBlock.push_back(txn);
-      if (miners.size()>1)
-        miners[listLoc]->recieveTxn(txn,currentState,listLoc,startLoc);
     } else {
       std::random_device r;
       std::default_random_engine gen(r());
@@ -199,26 +193,19 @@ void Miner::recieveTxn(const Txn& txn,size_t listLoc,size_t startLoc) {
         unapprovedBlocks[std::uniform_int_distribution<>(0,unapprovedBlocks.size())(gen)],
         &chain[std::uniform_int_distribution<>(0,chain.size())(gen)]
       });
-      recieveBlock(b,listLoc,listLoc);
+      recieveBlock(b);
     }
-  }));
+    //deletableThreads.push_back(t);
+  //}));
 }
-void Miner::recieveBlock(Block& b,const ExtraChainData& e,size_t listLoc,size_t startLoc) {
-  if (miners.size()>1) {
-    if ((listLoc+1)%miners.size()==startLoc) return;
-  }
+void Miner::sendBlock(Block& b,Miner& miner) {
   vector<Txn> txns(b.getTxns());
   vector<Block*> approved(b.getApproved());
   for (auto i = b.getTxns().begin(); i<b.getTxns().end(); i++) {
     auto& t = *i;
     vector<const TxnOtp*> inps(t.getInps());
-    try {
-      for (size_t j = 0;j<inps.size();j++)
-        inps[j] = (TxnOtp*)currentState.IDsReverse[e.IDs.at(inps[j]->HasID::getHasIDptr())];
-    } catch (...) {
-      std::cout<<".at failure line "<<__LINE__<<std::endl;
-      return;
-    }
+    for (size_t j = 0;j<inps.size();j++)
+      inps[j] = (TxnOtp*)miner.currentState.IDs[inps[j]->id];
     txns.push_back(Txn(
       inps,
       t.getOtps(),
@@ -228,39 +215,30 @@ void Miner::recieveBlock(Block& b,const ExtraChainData& e,size_t listLoc,size_t 
     ));
   }
   if (approved.size()>0) for (size_t i = 0;i<approved.size();i++)
-    try {
-      approved[i] = (Block*)currentState.IDsReverse[e.IDs.at(approved[i]->HasID::getHasIDptr())];
-    } catch (...) {
-      std::cout<<".at failure line "<<__LINE__<<std::endl;
-      return;
-    }
+    approved[i] = (Block*)miner.currentState.IDs[approved[i]->id];
 
   Block c(txns,approved);
-  recieveBlock(c,listLoc,startLoc);
+  c.id = b.id;
+  miner.recieveBlock(b);
 }
-void Miner::recieveBlock(Block& c,size_t listLoc,size_t startLoc) {
-  if (miners.size()>1) {
-    listLoc++;
-    listLoc %= miners.size();
-    if (listLoc==startLoc) return;
-  }
-  std::cout<<"--------------------------"<<std::endl;
-  std::cout<<"Checking block..."<<std::endl;
-  if (!c.getValid(currentState,v)) return;
-  std::cout<<"Block accepted"<<std::endl;
-  for (auto i=unapprovedBlocks.begin();i<unapprovedBlocks.end();i++)
-    for (auto j: c.getApproved())
-      if (*i==j) { unapprovedBlocks.erase(i); i--; }
-  c.apply(currentState);
-  for (auto t: c.getTxns()) {
-    for (auto i: t.getInps()) for (auto j=unspentOutputs.begin();j<unspentOutputs.end();j++) if (i==*j) unspentOutputs.erase(j);
-    for (auto i: t.getOtps()) unspentOutputs.push_back(&i);
-  }
-  if (miners.size()>1)
-    threads.push_back(thread([this,listLoc,startLoc](Block& c) {
-      networkWait();
-      miners[listLoc]->recieveBlock(c,currentState,listLoc,startLoc);
-    },std::ref(c)));
+void Miner::recieveBlock(Block& c) {
+  //threads.push_back(thread([this,listLoc,startLoc](Block& c) {
+    //thread* t = &threads[threads.size()-1];
+    networkWait();
+    //std::cout<<"--------------------------"<<std::endl;
+    //std::cout<<"Checking block..."<<std::endl;
+    if (!c.getValid(currentState,v)) return;
+    //std::cout<<"Block accepted"<<std::endl;
+    for (auto i=unapprovedBlocks.begin();i<unapprovedBlocks.end();i++)
+      for (auto j: c.getApproved())
+        if (*i==j) { unapprovedBlocks.erase(i); i--; }
+    c.apply(currentState);
+    for (auto t: c.getTxns()) {
+      for (auto i: t.getInps()) for (auto j=unspentOutputs.begin();j<unspentOutputs.end();j++) if (i==*j) unspentOutputs.erase(j);
+      for (auto i: t.getOtps()) unspentOutputs.push_back(&i);
+    }
+    //deletableThreads.push_back(t);
+  //},std::ref(c)));
 }
 Pubkey Miner::randomContKey() {
   std::random_device r;
@@ -272,7 +250,7 @@ Pubkey Miner::randomContKey() {
 }
 bool Miner::txnAcceptedYet(long long id) {
   try {
-    currentState.IDsReverse.at(id);
+    currentState.IDs.at(id);
     return true;
   } catch (...) {
     return false;
