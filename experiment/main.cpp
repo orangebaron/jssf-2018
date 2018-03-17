@@ -26,6 +26,6 @@ std::cout<<std::endl;
 int main() {
   for (int i=0;i<12;i++) {
     testThing(1);testThing(2);testThing(3);testThing(4);
+    std::cout<<"------"<<std::endl;
   }
-  std::cout<<"------"<<std::endl;
 }
