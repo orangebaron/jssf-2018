@@ -200,13 +200,13 @@ void Miner::recieveTxn(const Txn& txn) {
     thread* t = &threads[threads.size()-1];
     networkWait();
     if (txn.isFake()) return;
-    for (int i=0;i<(chainType.graphType == DAG?3:1);i++) {
+    //for (int i=0;i<(chainType.graphType == DAG?3:1);i++) {
       std::this_thread::sleep_for(std::chrono::milliseconds(txn.getOtps().size()*1));
       std::this_thread::sleep_for(std::chrono::milliseconds(txn.getContractCreations().size()*2));
       if (chainType.approvalType==allApprove)
         std::this_thread::sleep_for(std::chrono::milliseconds(txn.numContractCalls*5));
       std::this_thread::sleep_for(std::chrono::milliseconds(txn.getPunRwdTxns().size()*2));
-    }
+    //}
     totFees+=txn.getOtps().size()*1;
     totFees+=txn.getContractCreations().size()*2;
     if (chainType.approvalType==allApprove)
