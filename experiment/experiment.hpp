@@ -35,6 +35,8 @@ namespace blockchain {
     Pubkey randomPubkey();
     vector<unsigned int> randIntVector(size_t minSize,size_t maxSize);
   public:
+    int numSuccessfulTxns = 0;
+    long long totalTxnTime = 0;
     std::atomic_bool stop;
     User(MinerList&,int txnsPerSecond, ChainType, int fakesPerSecond = 0);
     ~User();

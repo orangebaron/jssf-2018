@@ -4,10 +4,10 @@ using namespace blockchain;
 #include "common_macros.hpp"
 #include <iostream>
 
-#define output(x) std::cout<<x<<std::endl;
+#define output(x) //std::cout<<x<<std::endl;
 
-Txn::Txn(vector<const TxnOtp*> inps,vector<TxnOtp> otps,vector<ContractCreation> contractCreations,vector<ContractCall> contractCalls,vector<Sig> sigs):
-  HasID(), inps(inps),otps(otps),contractCreations(contractCreations),contractCalls(contractCalls),sigs(sigs) {}
+Txn::Txn(vector<const TxnOtp*> inps,vector<TxnOtp> otps,vector<ContractCreation> contractCreations,vector<ContractCall> contractCalls,vector<Sig> sigs,vector<PunRwdTxn> punRwdTxns,int numContractCalls,bool fake):
+  HasID(), inps(inps),otps(otps),contractCreations(contractCreations),contractCalls(contractCalls),sigs(sigs),punRwdTxns(punRwdTxns),fake(fake),numContractCalls(numContractCalls) {}
 Hash Txn::getHashBeforeSig() const {
   return Hash();
 }
@@ -24,11 +24,16 @@ bool Txn::getValid(const ExtraChainData& e, ValidsChecked& v) const {
   TxnAmt sent = 0, recieved = 0;
   output("Checking txn inputs validity...");
   for (auto i: inps) {
-    output(i);
+    output(1);
+    output(i->id<<(i->getValid(e,v)?"true":"false"));
     if (!i->getValid(e,v)) return false;
+    output(2);
     if (i < &*otps.end() && i >= &*otps.begin()) return false; // check if it's referring to one of the outputs of this txn
+    output(3);
     if (inputsUsed[i]) return false;
+    output(4);
     try { if (e.spentOutputs.at(i)!=this) return false; } catch(...) {}
+    output(5);
     inputsUsed[i] = true;
     sent += i->getAmt();
     sendersThatDidntSign[i->getPerson()] = true;
@@ -97,6 +102,7 @@ const vector<TxnOtp>& Txn::getOtps() const { return otps; }
 const vector<ContractCreation>& Txn::getContractCreations() const { return contractCreations; }
 const vector<ContractCall>& Txn::getContractCalls() const { return contractCalls; }
 const vector<Sig>& Txn::getSigs() const { return sigs; }
+const vector<PunRwdTxn>& Txn::getPunRwdTxns() const {return punRwdTxns;}
 
 Block::Block(): HasID() {}
 Block::Block(vector<Txn> txns,vector<Block*> approved): HasID(),txns(txns),approved(approved) {}

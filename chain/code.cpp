@@ -114,4 +114,7 @@ RunOtp ContractCall::getOtp(const ExtraChainData& e) {
 unsigned long ContractCall::getId() const { return id; }
 WorkType ContractCall::getWork(WorkCalculated&) const { return 5+(args.size()*2); }
 
+PunRwdTxn::PunRwdTxn(ContractCall& appliedTo,RunOtp result):
+  appliedTo(appliedTo),result(result) {}
+
 #endif

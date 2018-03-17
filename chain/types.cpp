@@ -24,11 +24,12 @@ HasID::HasID(): id(
   (int)rand()
 ) {}
 bool HasID::getValid(const void* ptr,const ExtraChainData& e) const {
-  try {
+  /*try {
+    std::cout<<ptr<<" "<<e.IDs.at(id)<<std::endl;
     return e.IDs.at(id)==ptr;
-  } catch (...) {
+  } catch (...) {*/
     return true;
-  }
+  //}
 }
 void HasID::apply(const void* ptr,ExtraChainData& e) const {
   e.IDs.emplace(id,ptr);
@@ -50,7 +51,6 @@ bool Sig::getValid(const Hashable& h) const {
 WorkType Sig::getWork(WorkCalculated&) const { return 2; }
 
 TxnOtp::TxnOtp(Pubkey person,TxnAmt amt,ValidsChecked* v): HasID(), person(person), amt(amt) {
-  std::cout<<"Init txnotp"<<std::endl;
   if (v != nullptr) (*v)[this] = true;
 }
 Hash TxnOtp::getHash() const {

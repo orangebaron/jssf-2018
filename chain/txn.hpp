@@ -10,8 +10,12 @@ namespace blockchain {
     vector<ContractCreation> contractCreations;
     vector<ContractCall> contractCalls;
     vector<Sig> sigs;
+    vector<PunRwdTxn> punRwdTxns;
   public:
-    Txn(vector<const TxnOtp*>,vector<TxnOtp>,vector<ContractCreation>,vector<ContractCall>,vector<Sig>);
+    bool fake;
+    bool isFake() const {return fake;}
+    const int numContractCalls;
+    Txn(vector<const TxnOtp*>,vector<TxnOtp>,vector<ContractCreation>,vector<ContractCall>,vector<Sig>,vector<PunRwdTxn>,int =0,bool fake=false);
     virtual Hash getHash() const;
     virtual Hash getHashBeforeSig() const;
     virtual bool getValid(const ExtraChainData&,ValidsChecked&) const;
@@ -23,6 +27,7 @@ namespace blockchain {
     const vector<ContractCreation>& getContractCreations() const;
     const vector<ContractCall>& getContractCalls() const;
     const vector<Sig>& getSigs() const;
+    const vector<PunRwdTxn>& getPunRwdTxns() const;
   };
   class Block: public Hashable, public Validable, public Applyable, public WorkRequired, public HasID {
     vector<Txn> txns;

@@ -62,6 +62,11 @@ namespace blockchain {
     unsigned long getId() const;
     RunOtp getOtp(const ExtraChainData&);
   };
+  struct PunRwdTxn {
+    PunRwdTxn(ContractCall& appliedTo,RunOtp result);
+    ContractCall& appliedTo;
+    RunOtp result;
+  };
 }
 
 #endif
